@@ -175,7 +175,7 @@ export function CampusIllustration({ className = "" }: { className?: string }) {
       <rect x="78" y="46" width="104" height="8" className="fill-sun/80" />
       {[86, 108, 130, 152, 172].map((x) => <rect key={x} x={x} y="56" width="8" height="40" rx="2" className="fill-primary-foreground/80 dark:fill-foreground/80" />)}
       <rect x="74" y="96" width="112" height="6" rx="2" className="fill-sun/80" />
-      {[[40, 70], [214, 64]].map(([x, y], i) => (
+      {([[40, 70], [214, 64]] as const).map(([x, y], i) => (
         <motion.g key={x} animate={{ y: [0, -6, 0] }} transition={{ duration: 4, repeat: Infinity, delay: i, ease: "easeInOut" }}>
           <rect x={x - 18} y={y - 14} width="36" height="26" rx="8" className="fill-primary/60" />
           <text x={x} y={y + 4} textAnchor="middle" className="fill-primary-foreground" style={{ font: "700 11px Inter, sans-serif" }}>{i ? "EN" : "SV"}</text>

@@ -1,3 +1,4 @@
+import { ThesisIllustration } from "@/components/illustrations";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";

@@ -1,3 +1,4 @@
+import { EmptyBoardIllustration } from "@/components/illustrations";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { Download, Trash2 } from "lucide-react";

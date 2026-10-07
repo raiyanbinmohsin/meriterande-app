@@ -1,3 +1,4 @@
+import { NoResultsIllustration } from "@/components/illustrations";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { motion } from "motion/react";
