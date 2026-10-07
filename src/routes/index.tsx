@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { AdLinkFetch } from "@/components/AdLinkFetch";
 import { useEffect, useState } from "react";
 import { decodeAd, type DecodeResult } from "@/lib/decode.functions";
 import { SAMPLE_AD } from "@/lib/sample-ad";
@@ -95,6 +96,7 @@ function Index() {
         </p>
 
         <section className="mt-12 space-y-5 rounded-3xl border border-border bg-card p-5 shadow-soft sm:p-7">
+          <AdLinkFetch onText={(t) => { setAd(t); setError(null); }} />
           <Field label="Paste the job ad (Swedish or English)" required value={ad} onChange={setAd} rows={9}
             placeholder="Vi söker en Data Engineer till vårt team i Stockholm..." />
           <div>
