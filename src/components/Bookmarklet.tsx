@@ -31,7 +31,7 @@ export function BookmarkletButton() {
   return (
     <>
       <button onClick={() => setOpen(true)}
-        className="glass hidden h-11 items-center gap-2 rounded-full px-4 text-sm font-semibold text-foreground transition hover:-translate-y-0.5 lg:inline-flex">
+        className="glass hidden h-11 whitespace-nowrap items-center gap-2 rounded-full px-4 text-sm font-semibold text-foreground transition hover:-translate-y-0.5 lg:inline-flex">
         <PlusSquare className="h-4 w-4" /> Add to browser
       </button>
       {open && createPortal(<AnimatePresence>

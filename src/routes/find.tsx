@@ -3,7 +3,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { motion } from "motion/react";
 import { MapPin, Search, Building2, CalendarDays } from "lucide-react";
-import { SiteHeader, Wordmark } from "@/components/landing";
+import { SiteHeader, SiteFooter } from "@/components/landing";
 import { CvUpload } from "@/components/CvUpload";
 import { useCvText } from "@/lib/cv-store";
 import { findJobs, type FoundJob } from "@/lib/find.functions";
@@ -150,10 +150,7 @@ function FindPage() {
           </section>
         )}
       </main>
-      <footer className="border-t border-border py-10 text-center text-sm text-muted-foreground">
-        <div className="mb-3 flex justify-center opacity-80"><Wordmark /></div>
-        Built at Lovable Buildathon, Uppsala University.
-      </footer>
+      <SiteFooter />
     </div>
   );
 }

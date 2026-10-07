@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { getProgress, saveRoadmap } from "@/lib/progress";
 import { buildPlan, type PlanResult } from "@/lib/plan.functions";
 import { buildResources } from "@/lib/learning";
 import { ResourceCards, AnimatedNumber, LearnedButton } from "./Resources";
@@ -15,6 +16,16 @@ export function CloseTheGap({ ad, cv, score, gaps, lang = "English", roast = fal
   const [plan, setPlan] = useState<PlanResult | null>(null);
   const [done, setDone] = useState<Record<string, boolean>>({});
   const [learned, setLearned] = useState<Record<number, boolean>>({});
+
+  const planKey = plan ? `${title}::${plan.milestones.map((m) => m.goal).join("|")}`.slice(0, 300) : "";
+  useEffect(() => {
+    if (!planKey) return;
+    const saved = getProgress().roadmaps[planKey];
+    if (saved) { setDone(saved.done); setLearned(saved.learned); }
+  }, [planKey]);
+  useEffect(() => {
+    if (planKey && (Object.keys(done).length || Object.keys(learned).length)) saveRoadmap(planKey, { title, done, learned });
+  }, [planKey, done, learned, title]);
 
   async function onBuild() {
     setLoading(true); setError(null); setPlan(null); setDone({}); setLearned({});

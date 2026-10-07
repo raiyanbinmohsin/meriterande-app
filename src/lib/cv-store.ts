@@ -8,6 +8,8 @@ export function setCvText(v: string) {
   cvText = v;
   subs.forEach((f) => f());
 }
+export const getCvText = () => cvText;
+export function subscribeCv(f: () => void) { subs.add(f); return () => { subs.delete(f); }; }
 
 export function useCvText(): [string, (v: string) => void] {
   const v = useSyncExternalStore(
