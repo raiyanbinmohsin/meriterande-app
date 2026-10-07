@@ -3,7 +3,7 @@ import { fetchAd } from "@/lib/fetch-ad.functions";
 
 const BLOCKED = "This site blocks automatic reading. Please copy and paste the ad text instead.";
 
-export function AdLinkFetch({ onText, autoUrl, autoFetch = true }: { onText: (t: string) => void; autoUrl?: string; autoFetch?: boolean }) {
+export function AdLinkFetch({ onText, autoUrl, autoFetch = true }: { onText: (t: string) => void; autoUrl?: string | undefined; autoFetch?: boolean }) {
   const [url, setUrl] = useState("");
   const done = useRef("");
   useEffect(() => {

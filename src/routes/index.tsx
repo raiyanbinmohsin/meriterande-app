@@ -55,7 +55,7 @@ function Index() {
   const [country, setCountry] = useState("Sweden");
   const [savedId, setSavedId] = useState<string | null>(null);
   const cInfo = countryOf(country);
-  const [incoming, setIncoming] = useState<{ url?: string; text?: boolean }>({});
+  const [incoming, setIncoming] = useState<{ url?: string | undefined; text?: boolean }>({});
 
   useEffect(() => {
     const pend = takePendingAd();
