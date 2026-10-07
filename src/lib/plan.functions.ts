@@ -1,5 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { styleRules } from "./decode.functions";
+import { PLATFORM_IDS } from "./learning";
 
 export type Milestone = {
   horizon: "7 days" | "14 days" | "1 month" | "2 months" | "6 months";
@@ -8,12 +9,15 @@ export type Milestone = {
   resource_type: string;
   proof: string;
   projected_score: number;
+  gap_ids: number[];
 };
+export type SkillGap = { skill: string; query: string; platforms: string[]; points: number };
 export type PlanResult = {
   verdict: { label: "Apply now" | "Apply in ~X weeks" | "Long-term target"; weeks: number | null; reasoning: string };
   can_close: string[];
   cannot_close: string[];
   milestones: Milestone[];
+  skill_gaps: SkillGap[];
 };
 
 const strArr = { type: "array", items: { type: "string" } };
@@ -21,7 +25,7 @@ const HORIZONS = ["7 days", "14 days", "1 month", "2 months", "6 months"];
 const schema = {
   type: "object",
   additionalProperties: false,
-  required: ["verdict", "can_close", "cannot_close", "milestones"],
+  required: ["verdict", "can_close", "cannot_close", "milestones", "skill_gaps"],
   properties: {
     verdict: {
       type: "object",
@@ -35,12 +39,26 @@ const schema = {
     },
     can_close: strArr,
     cannot_close: strArr,
+    skill_gaps: {
+      type: "array",
+      items: {
+        type: "object",
+        additionalProperties: false,
+        required: ["skill", "query", "platforms", "points"],
+        properties: {
+          skill: { type: "string" },
+          query: { type: "string" },
+          platforms: { type: "array", items: { type: "string", enum: PLATFORM_IDS } },
+          points: { type: "integer" },
+        },
+      },
+    },
     milestones: {
       type: "array",
       items: {
         type: "object",
         additionalProperties: false,
-        required: ["horizon", "goal", "tasks", "resource_type", "proof", "projected_score"],
+        required: ["horizon", "goal", "tasks", "resource_type", "proof", "projected_score", "gap_ids"],
         properties: {
           horizon: { type: "string", enum: HORIZONS },
           goal: { type: "string" },
@@ -48,6 +66,7 @@ const schema = {
           resource_type: { type: "string" },
           proof: { type: "string" },
           projected_score: { type: "integer" },
+          gap_ids: { type: "array", items: { type: "integer" } },
         },
       },
     },
@@ -60,7 +79,9 @@ RULES:
 - Each milestone: one-sentence goal; 2-4 concrete tasks realistically sized to the given hours per week (cumulative time available by that horizon); a FREE resource type matching the learning style (e.g. "official docs", "a small portfolio project", "free YouTube course") — never specific URLs, brand course names or links; a concrete proof of skill to add to the CV (e.g. "GitHub repo: streaming pipeline with Kafka"); a projected fit score (0-100) if completed. Scores start from the current score and must not decrease.
 - Be realistic. Years of required experience, degrees, citizenship, licences that take long, or fluent Swedish cannot be closed in days or weeks. List what can be closed in can_close and what cannot (realistically, within the target date) in cannot_close. Never claim the impossible; projected scores must reflect hard gaps that remain.
 - verdict.label: "Apply now" if the current fit is already competitive or remaining gaps are minor; "Apply in ~X weeks" if key closable gaps can be closed within roughly the target date (set weeks to an integer); "Long-term target" if hard gaps remain. weeks is null unless label is "Apply in ~X weeks". reasoning: one sentence.
-- Do not invent facts about the candidate or the ad.`;
+- Do not invent facts about the candidate or the ad.
+- skill_gaps: 2-6 learnable skill gaps (skills/tools/languages — not years of experience or citizenship). skill: short name (e.g. "Apache Kafka"). query: a short search query in English for learning it (e.g. "kafka streaming beginner"). platforms: the 2-3 best fitting ids from this list ONLY: docs (official documentation of a tool), mslearn (Microsoft/Azure/Power BI), coursera, edx, freecodecamp (programming), kaggle (data science/ML/SQL/Python practice), mitocw (CS/math theory), elementsofai (AI basics), youtube, sfi and duolingo (Swedish language only). NEVER write URLs anywhere. points: realistic fit-score points gained if this gap is closed (sum must not exceed 100 minus the current score).
+- Each milestone's gap_ids: 0-based indices into skill_gaps that its tasks work on.`;
 
 export const buildPlan = createServerFn({ method: "POST" })
   .inputValidator((d: { ad: string; cv: string; score: number; gaps: string[]; hours: number; styles: string[]; target: string; lang?: string; roast?: boolean; country?: string }) => {
@@ -124,7 +145,13 @@ export const buildPlan = createServerFn({ method: "POST" })
       result.milestones = result.milestones.slice(0, 5).map((m) => {
         const s = Math.max(prev, Math.min(100, Math.round(m.projected_score)));
         prev = s;
-        return { ...m, projected_score: s, tasks: m.tasks.slice(0, 4) };
+        return { ...m, projected_score: s, tasks: m.tasks.slice(0, 4), gap_ids: (m.gap_ids ?? []).filter((i) => i >= 0 && i < (result.skill_gaps ?? []).length) };
+      });
+      let room = 100 - data.score;
+      result.skill_gaps = (result.skill_gaps ?? []).slice(0, 6).map((g) => {
+        const pts = Math.max(0, Math.min(room, Math.round(g.points)));
+        room -= pts;
+        return { ...g, points: pts };
       });
       return { ok: true, result };
     } catch {

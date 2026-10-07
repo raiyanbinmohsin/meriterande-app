@@ -1,5 +1,7 @@
 import { useState } from "react";
 import { buildPlan, type PlanResult } from "@/lib/plan.functions";
+import { buildResources } from "@/lib/learning";
+import { ResourceCards, AnimatedNumber, LearnedButton } from "./Resources";
 
 const STYLES = ["Courses", "Building projects", "Reading docs", "Videos"];
 const TARGETS = ["7 days", "14 days", "1 month", "2 months", "6 months"];
@@ -12,9 +14,10 @@ export function CloseTheGap({ ad, cv, score, gaps, lang = "English", roast = fal
   const [error, setError] = useState<string | null>(null);
   const [plan, setPlan] = useState<PlanResult | null>(null);
   const [done, setDone] = useState<Record<string, boolean>>({});
+  const [learned, setLearned] = useState<Record<number, boolean>>({});
 
   async function onBuild() {
-    setLoading(true); setError(null); setPlan(null); setDone({});
+    setLoading(true); setError(null); setPlan(null); setDone({}); setLearned({});
     try {
       const r = await buildPlan({ data: { ad, cv, score, gaps, hours, styles, target, lang, roast, country } });
       if (r.ok) setPlan(r.result); else setError(r.error);
@@ -26,6 +29,9 @@ export function CloseTheGap({ ad, cv, score, gaps, lang = "English", roast = fal
   const total = plan?.milestones.reduce((n, m) => n + m.tasks.length, 0) ?? 0;
   const checked = Object.values(done).filter(Boolean).length;
   const pct = total ? Math.round((checked / total) * 100) : 0;
+  const res = (plan?.skill_gaps ?? []).map((g) => buildResources(g.skill, g.query, g.platforms));
+  const boost = (plan?.skill_gaps ?? []).reduce((n, g, i) => n + (learned[i] ? g.points : 0), 0);
+  const nowScore = Math.min(100, score + boost);
 
   return (
     <div className="glass lift rounded-3xl p-6 sm:p-8">
@@ -84,7 +90,32 @@ export function CloseTheGap({ ad, cv, score, gaps, lang = "English", roast = fal
             <button onClick={() => downloadPdf(plan, score, done)}
               className="rounded-full border border-border bg-card px-4 py-2 text-sm font-semibold transition hover:bg-secondary">Download plan</button>
           </div>
-          <Chart start={score} points={plan.milestones.map((m) => ({ label: m.horizon, v: m.projected_score }))} />
+          {plan.skill_gaps.length > 0 && (
+            <div className="rounded-2xl border border-border bg-background p-5">
+              <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
+                <div>
+                  <p className="text-sm font-semibold">Skill gaps & where to learn them</p>
+                  <p className="text-sm text-muted-foreground">Mark a gap as learned to see your projected fit rise.</p>
+                </div>
+                <div className="text-end">
+                  <p className="text-xs font-bold uppercase tracking-[0.12em] text-muted-foreground">Projected fit</p>
+                  <p className="text-5xl leading-none text-primary" style={{ fontFamily: "var(--font-display)" }}><AnimatedNumber value={nowScore} /><span className="text-lg text-muted-foreground">/100</span></p>
+                </div>
+              </div>
+              <ul className="space-y-5">
+                {plan.skill_gaps.map((g, gi) => (
+                  <li key={gi} className={`rounded-2xl p-3 transition ${learned[gi] ? "bg-success/5" : ""}`}>
+                    <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+                      <p className={`font-semibold ${learned[gi] ? "text-success" : ""}`}>{g.skill}</p>
+                      <LearnedButton on={!!learned[gi]} points={g.points} onClick={() => setLearned({ ...learned, [gi]: !learned[gi] })} />
+                    </div>
+                    <ResourceCards items={res[gi] ?? []} />
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+          <Chart start={nowScore} points={plan.milestones.map((m) => ({ label: m.horizon, v: Math.max(m.projected_score, nowScore) }))} />
           <ol className="relative space-y-6 border-l-2 border-border pl-6">
             {plan.milestones.map((m, mi) => (
               <li key={mi} className="relative">
@@ -107,6 +138,16 @@ export function CloseTheGap({ ad, cv, score, gaps, lang = "English", roast = fal
                     );
                   })}
                 </ul>
+                {m.gap_ids.length > 0 && (
+                  <div className="mt-3 space-y-2">
+                    {m.gap_ids.map((gi) => (
+                      <div key={gi}>
+                        <p className="mb-1 text-xs font-bold uppercase tracking-[0.12em] text-muted-foreground">Learn: {plan.skill_gaps[gi]?.skill}</p>
+                        <ResourceCards items={res[gi] ?? []} compact />
+                      </div>
+                    ))}
+                  </div>
+                )}
                 <div className="mt-3 grid gap-2 text-sm sm:grid-cols-2">
                   <p className="rounded-xl bg-accent p-3 text-accent-foreground"><strong>Resource: </strong>{m.resource_type}</p>
                   <p className="rounded-xl bg-secondary p-3 text-secondary-foreground"><strong>Proof for CV: </strong>{m.proof}</p>
@@ -114,6 +155,7 @@ export function CloseTheGap({ ad, cv, score, gaps, lang = "English", roast = fal
               </li>
             ))}
           </ol>
+          <p className="text-xs text-muted-foreground">Links go to official sources and trusted learning platforms. Meriterande isn't affiliated with any of them.</p>
         </div>
       )}
     </div>
