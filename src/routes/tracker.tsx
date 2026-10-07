@@ -2,7 +2,7 @@ import { EmptyBoardIllustration } from "@/components/illustrations";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { Download, Trash2 } from "lucide-react";
-import { SiteHeader, Wordmark } from "@/components/landing";
+import { SiteHeader, SiteFooter } from "@/components/landing";
 import { COLUMNS, daysUntil, removeJob, streak, toCsv, updateJob, useJobs, type Column, type Job } from "@/lib/tracker";
 
 const TITLE = "Application tracker — Meriterande";
@@ -111,10 +111,7 @@ function TrackerPage() {
           })}
         </div>
       </main>
-      <footer className="border-t border-border py-10 text-center text-sm text-muted-foreground">
-        <div className="mb-3 flex justify-center opacity-80"><Wordmark /></div>
-        Built at Lovable Buildathon, Uppsala University.
-      </footer>
+      <SiteFooter />
     </div>
   );
 }

@@ -3,7 +3,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import { Check, Copy, Mail, Sparkles, X, Users, MessageSquare, Linkedin } from "lucide-react";
-import { SiteHeader, Wordmark } from "@/components/landing";
+import { SiteHeader, SiteFooter } from "@/components/landing";
 import { CvUpload } from "@/components/CvUpload";
 import { AdLinkFetch } from "@/components/AdLinkFetch";
 import { CloseTheGap } from "@/components/CloseTheGap";
@@ -11,6 +11,7 @@ import { useCvText } from "@/lib/cv-store";
 import { LANGS, COUNTRIES, countryOf } from "@/lib/decode.functions";
 import { generatePitch, pitchForIdea, extractSkills, type Pitch, type Idea, type Outreach } from "@/lib/thesis.functions";
 import { addJob } from "@/lib/tracker";
+import { setInterviewSetup } from "@/lib/interview-store";
 import { downloadThesisCard } from "@/components/thesis-share";
 
 const TITLE = "Pitch a thesis — Meriterande";
@@ -379,6 +380,10 @@ function ThesisPage() {
                     <p className="mt-1 text-sm text-muted-foreground"><strong>Hint: </strong>{out.tough.hint}</p>
                   </li>
                 </ol>
+                <Link to="/interview" onClick={() => setInterviewSetup({ title: `${company} · ${idea.title}`, context: prepBrief(idea, company, companyInfo, program, length, start), cv, questions: out.interview.map((q) => q.question).slice(0, 5) })}
+                  className="mt-5 inline-flex h-12 items-center gap-2 rounded-full bg-primary px-6 font-semibold text-primary-foreground shadow-soft transition hover:-translate-y-0.5">
+                  <MessageSquare className="h-4 w-4" /> Practise in a mock interview
+                </Link>
               </div>
             </Item>
 
@@ -391,10 +396,7 @@ function ThesisPage() {
           </motion.section>
         )}
       </main>
-      <footer className="border-t border-border py-10 text-center text-sm text-muted-foreground">
-        <div className="mb-3 flex justify-center opacity-80"><Wordmark /></div>
-        Built at Lovable Buildathon, Uppsala University.
-      </footer>
+      <SiteFooter />
     </div>
   );
 }

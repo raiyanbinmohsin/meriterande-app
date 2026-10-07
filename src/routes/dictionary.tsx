@@ -1,8 +1,8 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { Link, createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { motion } from "motion/react";
 import { Search } from "lucide-react";
-import { SiteHeader, Wordmark } from "@/components/landing";
+import { SiteHeader, SiteFooter } from "@/components/landing";
 import { TERMS } from "@/lib/dictionary";
 
 const TITLE = "Swedish job-ad dictionary — Meriterande";
@@ -53,14 +53,12 @@ function DictionaryPage() {
               <h2 className="text-2xl text-foreground">{t.term}</h2>
               <p className="text-sm font-semibold text-primary">{t.english}</p>
               <p className="mt-2 text-muted-foreground">{t.really}</p>
+              <Link to="/learn" search={{ phrase: t.term }} className="mt-2 inline-flex min-h-11 items-center text-sm font-semibold text-primary">Mini lesson →</Link>
             </motion.article>
           ))}
         </div>
       </main>
-      <footer className="border-t border-border py-10 text-center text-sm text-muted-foreground">
-        <div className="mb-3 flex justify-center opacity-80"><Wordmark /></div>
-        Built at Lovable Buildathon, Uppsala University.
-      </footer>
+      <SiteFooter />
     </div>
   );
 }
