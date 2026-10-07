@@ -386,7 +386,7 @@ function FitCard({ fit }: { fit: NonNullable<DecodeResult["fit"]> }) {
             <circle cx="60" cy="60" r={r} className={`fill-none ${color}`} strokeWidth="10"
               strokeLinecap="round" strokeDasharray={c} strokeDashoffset={c * (1 - v / 100)} />
           </svg>
-          <div className="absolute inset-0 flex flex-col items-center justify-center">
+          <div dir="ltr" className="absolute inset-0 flex flex-col items-center justify-center">
             <span className="text-5xl tabular-nums" style={{ fontFamily: "var(--font-display)" }}>{v}</span>
             <span className="text-xs text-muted-foreground">/ 100</span>
           </div>
