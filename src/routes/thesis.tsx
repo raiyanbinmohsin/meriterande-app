@@ -1,3 +1,4 @@
+import { ThesisIllustration } from "@/components/illustrations";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
@@ -151,6 +152,9 @@ function ThesisPage() {
             className="mx-auto mt-6 max-w-xl text-lg text-muted-foreground sm:text-xl">
             Most companies never post their best thesis projects. Propose one they can't ignore.
           </motion.p>
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.9, delay: 0.3 }}>
+            <ThesisIllustration className="mx-auto mt-8 w-full max-w-xl" />
+          </motion.div>
         </div>
       </section>
 

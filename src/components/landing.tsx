@@ -1,5 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import { BookmarkletButton } from "./Bookmarklet";
+import { HeroIllustration, StepIllustration, CampusIllustration } from "./illustrations";
 import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import { ClipboardPaste, Sparkles, Route as RouteIcon, Moon, Sun, Languages, Compass, HeartHandshake, Mail } from "lucide-react";
@@ -154,7 +155,9 @@ export function Hero({ adj = "Swedish", country = "Sweden" }: { adj?: string; co
             Start decoding
           </a>
         </motion.div>
-        <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.9, delay: 0.35 }}>
+        <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.9, delay: 0.35 }}
+          className="mt-10 grid items-center gap-4 text-start lg:-mx-16 lg:grid-cols-2">
+          <HeroIllustration className="mx-auto w-full max-w-md" />
           <DecodePreview />
         </motion.div>
       </div>
@@ -179,6 +182,7 @@ export function HowItWorks() {
             transition={{ duration: 0.6, delay: i * 0.12, ease: [0.2, 0.8, 0.2, 1] }}
             className="glass lift relative rounded-3xl p-6">
             <span className="absolute right-5 top-4 text-5xl text-muted-foreground/25" style={{ fontFamily: "var(--font-display)" }}>{i + 1}</span>
+            <StepIllustration step={i as 0 | 1 | 2} className="-mx-2 mb-3 h-24 w-auto" />
             <span className="grid h-12 w-12 place-items-center rounded-2xl bg-primary/12 text-primary"><s.icon className="h-6 w-6" /></span>
             <h3 className="mt-5 text-2xl text-foreground">{s.title}</h3>
             <p className="mt-1.5 text-muted-foreground">{s.text}</p>
@@ -201,6 +205,7 @@ export function CareerCentres() {
       <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, margin: "-80px" }} transition={{ duration: 0.6 }}
         className="relative isolate overflow-hidden rounded-[2rem] bg-navy p-7 text-center sm:p-12">
         <div className="mesh pointer-events-none absolute -inset-10 -z-10 opacity-60" />
+        <CampusIllustration className="mx-auto mb-4 h-24 w-auto" />
         <p className="text-sm font-bold uppercase tracking-[0.16em] text-sun">For career centres</p>
         <h2 className="mx-auto mt-3 max-w-2xl text-4xl leading-tight text-primary-foreground sm:text-5xl dark:text-foreground">
           Give every international student a job-market translator.

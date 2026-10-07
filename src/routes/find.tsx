@@ -1,3 +1,4 @@
+import { NoResultsIllustration } from "@/components/illustrations";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { motion } from "motion/react";
@@ -118,7 +119,7 @@ function FindPage() {
               <h2 className="text-4xl text-foreground">{jobs.length ? `${jobs.length} jobs` : "No jobs found"}</h2>
               {note && <p className="text-sm text-muted-foreground">{note}</p>}
             </div>
-            {!jobs.length && <p className="text-muted-foreground">Try a broader keyword or remove the city.</p>}
+            {!jobs.length && <div className="glass rounded-3xl p-6 text-center text-muted-foreground"><NoResultsIllustration className="mx-auto mb-3 h-28 w-auto" />Try a broader keyword or remove the city.</div>}
             {jobs.map((j, i) => (
               <motion.article key={j.id} initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.45, delay: i * 0.06 }}
                 className="glass lift flex flex-col gap-4 rounded-3xl p-5 sm:flex-row sm:p-6">
