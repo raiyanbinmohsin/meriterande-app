@@ -50,9 +50,9 @@ function Tabs({ mobile }: { mobile?: boolean }) {
       <Link to="/" className={pill + f} activeOptions={{ exact: true }} activeProps={{ className: on }} inactiveProps={{ className: off }}>
         {mobile ? "Decode" : "Decode a job ad"}
       </Link>
-      <span title="Coming soon" aria-disabled="true" className={`${pill}${f} cursor-not-allowed text-muted-foreground/70`}>
-        {mobile ? "Thesis · soon" : <>Pitch a thesis <span className="ml-1 rounded-full bg-muted px-1.5 py-0.5 text-[10px] uppercase tracking-wider">soon</span></>}
-      </span>
+      <Link to="/thesis" className={pill + f} activeProps={{ className: on }} inactiveProps={{ className: off }}>
+        {mobile ? "Thesis" : "Pitch a thesis"}
+      </Link>
       <Link to="/find" className={pill + f} activeProps={{ className: on }} inactiveProps={{ className: off }}>
         {mobile ? "Find jobs" : "Find jobs I fit"}
       </Link>
