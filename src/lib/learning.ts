@@ -3,9 +3,9 @@
 
 export type PlatformId =
   | "docs" | "mslearn" | "coursera" | "edx" | "freecodecamp" | "kaggle"
-  | "mitocw" | "elementsofai" | "youtube" | "sfi" | "duolingo";
+  | "mitocw" | "elementsofai" | "youtube" | "sfi" | "duolingo" | "scholar" | "arxiv";
 
-export type ResourceType = "docs" | "course" | "video" | "practice";
+export type ResourceType = "docs" | "course" | "video" | "practice" | "papers";
 
 export type Platform = {
   id: PlatformId;
@@ -29,6 +29,8 @@ export const PLATFORMS: Record<PlatformId, Platform> = {
   elementsofai: { id: "elementsofai", name: "Elements of AI", short: "AI", type: "course", cost: "Free", url: () => "https://www.elementsofai.com/" },
   youtube: { id: "youtube", name: "YouTube", short: "▶", type: "video", cost: "Free", url: (q) => `https://www.youtube.com/results?search_query=${enc(q)}` },
   sfi: { id: "sfi", name: "SFI — Swedish for Immigrants", short: "SFI", type: "course", cost: "Free", url: () => "https://www.skolverket.se/undervisning/vuxenutbildningen/komvux-svenska-for-invandrare-sfi" },
+  scholar: { id: "scholar", name: "Google Scholar", short: "GS", type: "papers", cost: "Free", url: (q) => `https://scholar.google.com/scholar?q=${enc(q)}` },
+  arxiv: { id: "arxiv", name: "arXiv", short: "arX", type: "papers", cost: "Free", url: (q) => `https://arxiv.org/search/?query=${enc(q)}&searchtype=all` },
   duolingo: { id: "duolingo", name: "Duolingo Swedish", short: "D", type: "practice", cost: "Free", url: () => "https://www.duolingo.com/course/sv/en/Learn-Swedish" },
 };
 

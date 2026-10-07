@@ -6,7 +6,7 @@ import { ResourceCards, AnimatedNumber, LearnedButton } from "./Resources";
 const STYLES = ["Courses", "Building projects", "Reading docs", "Videos"];
 const TARGETS = ["7 days", "14 days", "1 month", "2 months", "6 months"];
 
-export function CloseTheGap({ ad, cv, score, gaps, lang = "English", roast = false, country = "Sweden" }: { country?: string; ad: string; cv: string; score: number; gaps: string[]; lang?: string; roast?: boolean }) {
+export function CloseTheGap({ ad, cv, score, gaps, lang = "English", roast = false, country = "Sweden", title = "Close the gap", subtitle }: { country?: string; title?: string; subtitle?: string; ad: string; cv: string; score: number; gaps: string[]; lang?: string; roast?: boolean }) {
   const [hours, setHours] = useState(8);
   const [styles, setStyles] = useState<string[]>(["Building projects"]);
   const [target, setTarget] = useState("1 month");
@@ -35,8 +35,8 @@ export function CloseTheGap({ ad, cv, score, gaps, lang = "English", roast = fal
 
   return (
     <div className="glass lift rounded-3xl p-6 sm:p-8">
-      <h3 className="mb-1 text-2xl font-semibold">Close the gap</h3>
-      <p className="mb-5 text-muted-foreground">A personalized roadmap from your current fit of {score}/100.</p>
+      <h3 className="mb-1 text-2xl font-semibold">{title}</h3>
+      <p className="mb-5 text-muted-foreground">{subtitle ?? `A personalized roadmap from your current fit of ${score}/100.`}</p>
 
       <div className="space-y-5">
         <label className="block">
