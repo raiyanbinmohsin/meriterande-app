@@ -1,11 +1,11 @@
 import type { DecodeResult } from "@/lib/decode.functions";
 import type { CompareResult } from "@/lib/compare.functions";
 
-export function CompareTable({ results, rec }: { results: DecodeResult[]; rec: CompareResult | null }) {
+export function CompareTable({ results, rec, langName = "Swedish" }: { results: DecodeResult[]; rec: CompareResult | null; langName?: string }) {
   const best = rec?.best_index ?? -1;
   const rows: { label: string; get: (r: DecodeResult) => React.ReactNode }[] = [
     { label: "Fit score", get: (r) => <span className="text-3xl" style={{ fontFamily: "var(--font-display)" }}>{r.fit?.score ?? "—"}</span> },
-    { label: "Swedish required?", get: (r) => r.swedish.verdict },
+    { label: `${langName} required?`, get: (r) => r.swedish.verdict },
     { label: "Must-haves met", get: (r) => `${r.fit?.must_haves_met ?? "—"} / ${r.must_haves.length}` },
     { label: "Time to close the gap", get: (r) => r.fit?.time_to_close ?? "not specified" },
   ];

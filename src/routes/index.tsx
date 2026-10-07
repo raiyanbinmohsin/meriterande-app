@@ -1,7 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { AdLinkFetch } from "@/components/AdLinkFetch";
 import { useEffect, useState } from "react";
-import { decodeAd, LANGS, type DecodeResult } from "@/lib/decode.functions";
+import { decodeAd, LANGS, COUNTRIES, countryOf, type DecodeResult } from "@/lib/decode.functions";
+import { addJob } from "@/lib/tracker";
+import { Link } from "@tanstack/react-router";
 import { recommendAd, type CompareResult } from "@/lib/compare.functions";
 import { CompareTable } from "@/components/CompareTable";
 import { HighlightedAd } from "@/components/HighlightedAd";
@@ -11,7 +13,7 @@ import { CloseTheGap } from "@/components/CloseTheGap";
 import { CvUpload } from "@/components/CvUpload";
 import { useCvText } from "@/lib/cv-store";
 import { motion, AnimatePresence } from "motion/react";
-import { SiteHeader, Hero, HowItWorks, Wordmark } from "@/components/landing";
+import { SiteHeader, Hero, HowItWorks, Wordmark, CareerCentres } from "@/components/landing";
 
 const TITLE = "Meriterande — Decode any Swedish job ad in 5 seconds";
 const DESC = "Know what's required, what's 'meriterande', and whether you actually need Swedish. A job-ad decoder for international job seekers in Sweden.";
@@ -49,11 +51,14 @@ function Index() {
   const [copied, setCopied] = useState(false);
   const [lang, setLang] = useState<string>("English");
   const [roast, setRoast] = useState(false);
+  const [country, setCountry] = useState("Sweden");
+  const [savedId, setSavedId] = useState<string | null>(null);
+  const cInfo = countryOf(country);
   const [compare, setCompare] = useState(false);
   const [extraAds, setExtraAds] = useState<string[]>(["", ""]);
   const [compareRes, setCompareRes] = useState<DecodeResult[] | null>(null);
   const [rec, setRec] = useState<CompareResult | null>(null);
-  const [used, setUsed] = useState({ lang: "English", roast: false });
+  const [used, setUsed] = useState({ lang: "English", roast: false, country: "Sweden" });
   const rtl = used.lang === "Arabic" || used.lang === "Persian";
 
   useEffect(() => {
@@ -74,10 +79,11 @@ function Index() {
     setLoading(true);
     setMsgIdx(0);
     try {
-      const r = await decodeAd({ data: { ad, cv, lang, roast } });
+      const r = await decodeAd({ data: { ad, cv, lang, roast, country } });
       if (r.ok) {
-        setUsed({ lang, roast });
+        setUsed({ lang, roast, country });
         setResult(r.result);
+        setSavedId(null);
         setTimeout(() => document.getElementById("results")?.scrollIntoView({ behavior: "smooth" }), 50);
       } else setError(r.error);
     } catch (e) {
@@ -93,11 +99,11 @@ function Index() {
     if (cv.trim().length < 30) { setError("Add your CV so each ad can be scored against it."); return; }
     setError(null); setResult(null); setCompareRes(null); setRec(null); setLoading(true); setMsgIdx(0);
     try {
-      const rs = await Promise.all(ads.map((a) => decodeAd({ data: { ad: a, cv, lang, roast } })));
+      const rs = await Promise.all(ads.map((a) => decodeAd({ data: { ad: a, cv, lang, roast, country } })));
       const bad = rs.find((r) => !r.ok);
       if (bad && !bad.ok) { setError(bad.error); return; }
       const results = rs.map((r) => (r as { ok: true; result: DecodeResult }).result);
-      setUsed({ lang, roast });
+      setUsed({ lang, roast, country });
       setCompareRes(results);
       setTimeout(() => document.getElementById("results")?.scrollIntoView({ behavior: "smooth" }), 50);
       const rr = await recommendAd({ data: { lang, roast, rows: results.map((r, i) => ({
@@ -126,7 +132,7 @@ function Index() {
   return (
     <div className="min-h-screen bg-background">
       <SiteHeader />
-      <Hero />
+      <Hero adj={cInfo.adj} country={cInfo.name} />
       <HowItWorks />
       <main id="decode" className="mx-auto max-w-3xl scroll-mt-24 px-4 pb-20 sm:px-5">
         <motion.section initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, margin: "-60px" }}
@@ -139,7 +145,7 @@ function Index() {
           <AdLinkFetch onText={(t) => { setAd(t); setError(null); }} />
           <Field label={compare ? "Job ad 1" : "Paste the job ad (Swedish or English)"} required value={ad} onChange={setAd} rows={9}
             placeholder="Vi söker en Data Engineer till vårt team i Stockholm..." />
-          {!compare && <HighlightedAd text={ad} />}
+          {!compare && country === "Sweden" && <HighlightedAd text={ad} />}
           {compare && extraAds.map((x, i) => (
             <Field key={i} label={`Job ad ${i + 2}${i === 1 ? " (optional)" : ""}`} required={i === 0} value={x} rows={6}
               onChange={(v) => setExtraAds(extraAds.map((y, j) => (j === i ? v : y)))} placeholder="Paste another job ad..." />
@@ -155,6 +161,13 @@ function Index() {
               <select value={lang} onChange={(e) => setLang(e.target.value)} aria-label="Explanation language"
                 className="h-9 rounded-full bg-transparent pe-1 font-semibold text-foreground outline-none">
                 {LANGS.map((l) => <option key={l} value={l} className="bg-popover text-popover-foreground">{l}</option>)}
+              </select>
+            </label>
+            <label className="glass flex h-12 items-center gap-2 rounded-full ps-4 pe-2 text-sm font-semibold text-foreground">
+              <span className="text-muted-foreground">Job market</span>
+              <select value={country} onChange={(e) => setCountry(e.target.value)} aria-label="Job market country"
+                className="h-9 rounded-full bg-transparent pe-1 font-semibold text-foreground outline-none">
+                {COUNTRIES.map((c) => <option key={c.name} value={c.name} className="bg-popover text-popover-foreground">{c.name}</option>)}
               </select>
             </label>
             <Toggle on={roast} onChange={setRoast} label="Brutally honest 🔥" />
@@ -184,7 +197,7 @@ function Index() {
         {compareRes && (
           <motion.section id="results" dir={rtl ? "rtl" : "ltr"} className="mt-14 scroll-mt-24 space-y-5" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
             <h2 className="text-4xl text-foreground">Compared</h2>
-            <CompareTable results={compareRes} rec={rec} />
+            <CompareTable results={compareRes} rec={rec} langName={countryOf(used.country).lang} />
           </motion.section>
         )}
 
@@ -194,6 +207,14 @@ function Index() {
             <Item className="flex items-center justify-between gap-3">
               <h2 className="text-4xl text-foreground">Decoded</h2>
               <div className="flex flex-wrap gap-2">
+                {savedId ? (
+                  <Link to="/tracker" className="inline-flex h-11 items-center rounded-full bg-success/15 px-5 text-sm font-semibold text-success">Saved ✓ View tracker</Link>
+                ) : (
+                  <button onClick={() => setSavedId(addJob({ title: result.job_title || "Untitled role", company: result.company || "not specified", score: result.fit?.score ?? null, verdict: `${countryOf(used.country).lang}: ${result.swedish.verdict}` }).id)}
+                    className="inline-flex h-11 items-center rounded-full bg-primary px-5 text-sm font-semibold text-primary-foreground shadow-soft transition hover:-translate-y-0.5">
+                    Save to tracker
+                  </button>
+                )}
                 <button onClick={() => downloadShareImage(result, rtl)}
                   className="glass h-11 rounded-full px-5 text-sm font-semibold text-foreground transition hover:-translate-y-0.5">
                   Share image
@@ -215,12 +236,12 @@ function Index() {
             )}
             {result.fit && <Item><FitCard fit={result.fit} /></Item>}
             {result.fit && cv.trim() && (
-              <Item><CloseTheGap ad={ad} cv={cv} score={result.fit.score} gaps={result.fit.gaps} lang={used.lang} roast={used.roast} /></Item>
+              <Item><CloseTheGap ad={ad} cv={cv} score={result.fit.score} gaps={result.fit.gaps} lang={used.lang} roast={used.roast} country={used.country} /></Item>
             )}
 
             <Item><Card title="Role summary"><p className="text-[17px] leading-relaxed">{result.role_summary}</p></Card></Item>
 
-            <Item><SwedishCard s={result.swedish} /></Item>
+            <Item><SwedishCard s={result.swedish} title={`${countryOf(used.country).lang} language`} /></Item>
 
             <Item className="grid gap-5 sm:grid-cols-2">
               <Card title="Must-haves"><List items={result.must_haves} dot="bg-primary" /></Card>
@@ -246,6 +267,7 @@ function Index() {
           </motion.section>
         )}
       </main>
+      <CareerCentres />
       <footer className="border-t border-border py-10 text-center text-sm text-muted-foreground">
         <div className="mb-3 flex justify-center opacity-80"><Wordmark /></div>
         Built at Lovable Buildathon, Uppsala University.
@@ -335,12 +357,12 @@ function List({ items, dot }: { items: string[]; dot: string }) {
   );
 }
 
-function SwedishCard({ s }: { s: DecodeResult["swedish"] }) {
+function SwedishCard({ s, title = "Swedish language" }: { s: DecodeResult["swedish"]; title?: string }) {
   const tone = s.verdict === "Required" ? "bg-destructive/12 text-destructive"
     : s.verdict === "Helpful" ? "bg-accent text-accent-foreground"
     : s.verdict === "Not needed" ? "bg-success/15 text-success" : "bg-muted text-muted-foreground";
   return (
-    <Card title="Swedish language">
+    <Card title={title}>
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
         <span className={`w-fit rounded-full px-5 py-2 text-2xl ${tone}`} style={{ fontFamily: "var(--font-display)" }}>{s.verdict}</span>
         <p className="text-muted-foreground">{s.reason}</p>
