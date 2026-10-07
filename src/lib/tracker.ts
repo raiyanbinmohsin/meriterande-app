@@ -2,8 +2,10 @@ import { useSyncExternalStore } from "react";
 
 export const COLUMNS = ["Saved", "Applied", "Interview", "Offer", "Rejected"] as const;
 export type Column = (typeof COLUMNS)[number];
+export type JobKind = "job" | "thesis";
 export type Job = {
   id: string;
+  kind: JobKind;
   title: string;
   company: string;
   score: number | null;
@@ -38,8 +40,8 @@ export function useJobs() {
   return useSyncExternalStore((f) => { subs.add(f); return () => subs.delete(f); }, read, () => EMPTY);
 }
 
-export function addJob(j: Pick<Job, "title" | "company" | "score" | "verdict">) {
-  const job: Job = { ...j, id: crypto.randomUUID(), savedOn: today(), column: "Saved", notes: "", deadline: "", appliedOn: "", reachedInterview: false };
+export function addJob(j: Pick<Job, "title" | "company" | "score" | "verdict"> & { kind?: JobKind }) {
+  const job: Job = { kind: "job", ...j, id: crypto.randomUUID(), savedOn: today(), column: "Saved", notes: "", deadline: "", appliedOn: "", reachedInterview: false };
   write([job, ...read()]);
   return job;
 }
