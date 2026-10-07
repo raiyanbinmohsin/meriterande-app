@@ -73,7 +73,7 @@ export const buildPlan = createServerFn({ method: "POST" })
     return { ad, cv, score: Math.max(0, Math.min(100, Number(d.score) || 0)), gaps, hours, styles, target };
   })
   .handler(async ({ data }): Promise<{ ok: true; result: PlanResult } | { ok: false; error: string }> => {
-    const key = process.env.LOVABLE_API_KEY;
+    const key = process.env["LOVABLE_API_KEY"];
     if (!key) return { ok: false, error: "AI is not configured." };
     const input = `JOB AD:\n"""\n${data.ad}\n"""\n\nCV:\n"""\n${data.cv}\n"""\n\nCURRENT FIT SCORE: ${data.score}/100\nIDENTIFIED GAPS:\n${data.gaps.map((g) => `- ${g}`).join("\n")}\n\nHOURS PER WEEK: ${data.hours}\nLEARNS BEST VIA: ${data.styles.join(", ") || "no preference"}\nTARGET APPLICATION DATE: in ${data.target}`;
     const res = await fetch("https://ai.gateway.lovable.dev/v1/responses", {

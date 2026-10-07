@@ -75,7 +75,7 @@ export const decodeAd = createServerFn({ method: "POST" })
     return { ad, cv };
   })
   .handler(async ({ data }): Promise<{ ok: true; result: DecodeResult } | { ok: false; error: string }> => {
-    const key = process.env.LOVABLE_API_KEY;
+    const key = process.env["LOVABLE_API_KEY"];
     if (!key) return { ok: false, error: "AI is not configured." };
     const input = `JOB AD:\n"""\n${data.ad}\n"""\n\nCV:\n${data.cv ? `"""\n${data.cv}\n"""` : "(none provided — fit must be null)"}`;
     const res = await fetch("https://ai.gateway.lovable.dev/v1/responses", {
