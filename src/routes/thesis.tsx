@@ -276,7 +276,7 @@ function ThesisPage() {
                 {saved ? (
                   <Link to="/tracker" className="inline-flex h-11 items-center rounded-full bg-success/15 px-5 text-sm font-semibold text-success">Saved ✓ View tracker</Link>
                 ) : (
-                  <button onClick={() => { addJob({ title: `Thesis pitch: ${idea.title}`, company, score: idea.readiness, verdict: "Thesis pitch" }); setSaved(true); }}
+                  <button onClick={() => { addJob({ title: `Thesis pitch: ${idea.title}`, company, score: idea.readiness, verdict: "Thesis pitch", kind: "thesis" }); setSaved(true); }}
                     className="inline-flex h-11 items-center rounded-full bg-primary px-5 text-sm font-semibold text-primary-foreground shadow-soft transition hover:-translate-y-0.5">Save to tracker</button>
                 )}
               </div>

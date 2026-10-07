@@ -24,9 +24,16 @@ export const Route = createFileRoute("/tracker")({
 
 const DOT: Record<Column, string> = { Saved: "bg-muted-foreground", Applied: "bg-primary", Interview: "bg-sun", Offer: "bg-success", Rejected: "bg-destructive" };
 
+type KindFilter = "all" | "job" | "thesis";
+const KIND_LABEL: Record<string, string> = { job: "Job", thesis: "Thesis pitch" };
+const KIND_BADGE: Record<string, string> = { job: "bg-primary/12 text-primary", thesis: "bg-sun/20 text-sun-foreground" };
+const kindOf = (j: Job) => j.kind ?? "job";
+
 function TrackerPage() {
   const jobs = useJobs();
   const [over, setOver] = useState<Column | null>(null);
+  const [kindFilter, setKindFilter] = useState<KindFilter>("all");
+  const visible = jobs.filter((j) => kindFilter === "all" || kindOf(j) === kindFilter);
   const applied = jobs.filter((j) => j.appliedOn).length;
   const scored = jobs.filter((j) => j.score != null);
   const avg = scored.length ? Math.round(scored.reduce((n, j) => n + (j.score ?? 0), 0) / scored.length) : null;
