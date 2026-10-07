@@ -71,7 +71,7 @@ export function SiteHeader() {
         <ThemeToggle />
       </div>
       <nav aria-label="Sections" className="px-4 pb-2 md:hidden">
-        <div className="glass flex w-full rounded-full p-1"><Tabs mobile /></div>
+        <div className="glass flex w-full overflow-x-auto rounded-full p-1 text-[13px] [&>*]:shrink-0"><Tabs mobile /></div>
       </nav>
     </header>
   );
