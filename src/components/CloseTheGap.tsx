@@ -4,7 +4,7 @@ import { buildPlan, type PlanResult } from "@/lib/plan.functions";
 const STYLES = ["Courses", "Building projects", "Reading docs", "Videos"];
 const TARGETS = ["7 days", "14 days", "1 month", "2 months", "6 months"];
 
-export function CloseTheGap({ ad, cv, score, gaps }: { ad: string; cv: string; score: number; gaps: string[] }) {
+export function CloseTheGap({ ad, cv, score, gaps, lang = "English", roast = false }: { ad: string; cv: string; score: number; gaps: string[]; lang?: string; roast?: boolean }) {
   const [hours, setHours] = useState(8);
   const [styles, setStyles] = useState<string[]>(["Building projects"]);
   const [target, setTarget] = useState("1 month");
@@ -16,7 +16,7 @@ export function CloseTheGap({ ad, cv, score, gaps }: { ad: string; cv: string; s
   async function onBuild() {
     setLoading(true); setError(null); setPlan(null); setDone({});
     try {
-      const r = await buildPlan({ data: { ad, cv, score, gaps, hours, styles, target } });
+      const r = await buildPlan({ data: { ad, cv, score, gaps, hours, styles, target, lang, roast } });
       if (r.ok) setPlan(r.result); else setError(r.error);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Something went wrong. Please try again.");
