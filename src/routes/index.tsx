@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { decodeAd, type DecodeResult } from "@/lib/decode.functions";
 import { SAMPLE_AD } from "@/lib/sample-ad";
+import { CloseTheGap } from "@/components/CloseTheGap";
 
 const TITLE = "Meriterande — Decode any Swedish job ad in 5 seconds";
 const DESC = "Know what's required, what's 'meriterande', and whether you actually need Swedish. A job-ad decoder for international job seekers in Sweden.";
@@ -132,6 +133,9 @@ function Index() {
             </div>
 
             {result.fit && <FitCard fit={result.fit} />}
+            {result.fit && cv.trim() && (
+              <CloseTheGap ad={ad} cv={cv} score={result.fit.score} gaps={result.fit.gaps} />
+            )}
 
             <Card title="Role summary"><p className="leading-relaxed">{result.role_summary}</p></Card>
 
