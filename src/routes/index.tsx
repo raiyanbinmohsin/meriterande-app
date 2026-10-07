@@ -1,7 +1,11 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { AdLinkFetch } from "@/components/AdLinkFetch";
 import { useEffect, useState } from "react";
-import { decodeAd, type DecodeResult } from "@/lib/decode.functions";
+import { decodeAd, LANGS, type DecodeResult } from "@/lib/decode.functions";
+import { recommendAd, type CompareResult } from "@/lib/compare.functions";
+import { CompareTable } from "@/components/CompareTable";
+import { HighlightedAd } from "@/components/HighlightedAd";
+import { downloadShareImage } from "@/components/share-image";
 import { SAMPLE_AD } from "@/lib/sample-ad";
 import { CloseTheGap } from "@/components/CloseTheGap";
 import { CvUpload } from "@/components/CvUpload";
@@ -43,6 +47,14 @@ function Index() {
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<DecodeResult | null>(null);
   const [copied, setCopied] = useState(false);
+  const [lang, setLang] = useState<string>("English");
+  const [roast, setRoast] = useState(false);
+  const [compare, setCompare] = useState(false);
+  const [extraAds, setExtraAds] = useState<string[]>(["", ""]);
+  const [compareRes, setCompareRes] = useState<DecodeResult[] | null>(null);
+  const [rec, setRec] = useState<CompareResult | null>(null);
+  const [used, setUsed] = useState({ lang: "English", roast: false });
+  const rtl = used.lang === "Arabic" || used.lang === "Persian";
 
   useEffect(() => {
     if (!loading) return;
@@ -51,20 +63,48 @@ function Index() {
   }, [loading]);
 
   async function onDecode() {
+    if (compare) return onCompare();
     if (ad.trim().length < 30) {
       setError("Please paste a job ad first (or try the example).");
       return;
     }
     setError(null);
     setResult(null);
+    setCompareRes(null);
     setLoading(true);
     setMsgIdx(0);
     try {
-      const r = await decodeAd({ data: { ad, cv } });
+      const r = await decodeAd({ data: { ad, cv, lang, roast } });
       if (r.ok) {
+        setUsed({ lang, roast });
         setResult(r.result);
         setTimeout(() => document.getElementById("results")?.scrollIntoView({ behavior: "smooth" }), 50);
       } else setError(r.error);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Something went wrong. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function onCompare() {
+    const ads = [ad, ...extraAds].map((x) => x.trim()).filter((x) => x.length >= 30);
+    if (ads.length < 2) { setError("Paste at least two job ads to compare."); return; }
+    if (cv.trim().length < 30) { setError("Add your CV so each ad can be scored against it."); return; }
+    setError(null); setResult(null); setCompareRes(null); setRec(null); setLoading(true); setMsgIdx(0);
+    try {
+      const rs = await Promise.all(ads.map((a) => decodeAd({ data: { ad: a, cv, lang, roast } })));
+      const bad = rs.find((r) => !r.ok);
+      if (bad && !bad.ok) { setError(bad.error); return; }
+      const results = rs.map((r) => (r as { ok: true; result: DecodeResult }).result);
+      setUsed({ lang, roast });
+      setCompareRes(results);
+      setTimeout(() => document.getElementById("results")?.scrollIntoView({ behavior: "smooth" }), 50);
+      const rr = await recommendAd({ data: { lang, roast, rows: results.map((r, i) => ({
+        label: `Ad ${i + 1}`, summary: r.role_summary, score: r.fit?.score ?? 0, swedish: r.swedish.verdict,
+        met: r.fit?.must_haves_met ?? 0, total: r.must_haves.length, time: r.fit?.time_to_close ?? "", gaps: r.fit?.gaps ?? [],
+      })) } });
+      if (rr.ok) setRec(rr.result); else setError(rr.error);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Something went wrong. Please try again.");
     } finally {
@@ -97,17 +137,33 @@ function Index() {
             <p className="mt-1 text-muted-foreground">Paste it, drop a link, or try the example.</p>
           </div>
           <AdLinkFetch onText={(t) => { setAd(t); setError(null); }} />
-          <Field label="Paste the job ad (Swedish or English)" required value={ad} onChange={setAd} rows={9}
+          <Field label={compare ? "Job ad 1" : "Paste the job ad (Swedish or English)"} required value={ad} onChange={setAd} rows={9}
             placeholder="Vi söker en Data Engineer till vårt team i Stockholm..." />
+          {!compare && <HighlightedAd text={ad} />}
+          {compare && extraAds.map((x, i) => (
+            <Field key={i} label={`Job ad ${i + 2}${i === 1 ? " (optional)" : ""}`} required={i === 0} value={x} rows={6}
+              onChange={(v) => setExtraAds(extraAds.map((y, j) => (j === i ? v : y)))} placeholder="Paste another job ad..." />
+          ))}
           <div>
             <CvUpload onText={setCv} />
             <Field label="Paste your CV (optional, for a fit score)" value={cv} onChange={setCv} rows={5}
               placeholder="Your experience, skills, education..." />
           </div>
+          <div className="flex flex-wrap items-center gap-2.5">
+            <label className="glass flex h-12 items-center gap-2 rounded-full ps-4 pe-2 text-sm font-semibold text-foreground">
+              <span className="text-muted-foreground">Explain in</span>
+              <select value={lang} onChange={(e) => setLang(e.target.value)} aria-label="Explanation language"
+                className="h-9 rounded-full bg-transparent pe-1 font-semibold text-foreground outline-none">
+                {LANGS.map((l) => <option key={l} value={l} className="bg-popover text-popover-foreground">{l}</option>)}
+              </select>
+            </label>
+            <Toggle on={roast} onChange={setRoast} label="Brutally honest 🔥" />
+            <Toggle on={compare} onChange={(v) => { setCompare(v); setError(null); }} label="Compare up to 3 ads" />
+          </div>
           <div className="flex flex-col gap-3 sm:flex-row">
             <button onClick={onDecode} disabled={loading}
               className="inline-flex h-14 items-center justify-center rounded-full bg-primary px-10 text-base font-semibold text-primary-foreground shadow-lift transition hover:-translate-y-0.5 disabled:translate-y-0 disabled:opacity-60">
-              {loading ? "Decoding..." : "Decode"}
+              {loading ? "Decoding..." : compare ? "Decode & compare" : "Decode"}
             </button>
             <button onClick={() => { setAd(SAMPLE_AD); setError(null); }} disabled={loading}
               className="inline-flex h-14 items-center justify-center rounded-full bg-accent px-7 text-base font-semibold text-accent-foreground transition hover:-translate-y-0.5 disabled:opacity-60">
@@ -125,20 +181,41 @@ function Index() {
           </motion.div>
         )}
 
+        {compareRes && (
+          <motion.section id="results" dir={rtl ? "rtl" : "ltr"} className="mt-14 scroll-mt-24 space-y-5" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+            <h2 className="text-4xl text-foreground">Compared</h2>
+            <CompareTable results={compareRes} rec={rec} />
+          </motion.section>
+        )}
+
         {result && (
-          <motion.section id="results" className="mt-14 scroll-mt-24 space-y-5" initial="hidden" animate="show"
+          <motion.section id="results" dir={rtl ? "rtl" : "ltr"} className="mt-14 scroll-mt-24 space-y-5" initial="hidden" animate="show"
             variants={{ hidden: {}, show: { transition: { staggerChildren: 0.09 } } }}>
             <Item className="flex items-center justify-between gap-3">
               <h2 className="text-4xl text-foreground">Decoded</h2>
-              <button onClick={onCopy}
-                className="glass h-11 rounded-full px-5 text-sm font-semibold text-foreground transition hover:-translate-y-0.5">
-                {copied ? "Copied ✓" : "Copy summary"}
-              </button>
+              <div className="flex flex-wrap gap-2">
+                <button onClick={() => downloadShareImage(result, rtl)}
+                  className="glass h-11 rounded-full px-5 text-sm font-semibold text-foreground transition hover:-translate-y-0.5">
+                  Share image
+                </button>
+                <button onClick={onCopy}
+                  className="glass h-11 rounded-full px-5 text-sm font-semibold text-foreground transition hover:-translate-y-0.5">
+                  {copied ? "Copied ✓" : "Copy summary"}
+                </button>
+              </div>
             </Item>
 
+            {result.roast && (
+              <Item>
+                <div className="rounded-3xl bg-accent p-6 text-accent-foreground shadow-soft sm:p-7">
+                  <p className="mb-2 text-xs font-bold uppercase tracking-[0.14em]">Roast card 🔥</p>
+                  <p className="text-2xl leading-snug" style={{ fontFamily: "var(--font-display)" }}>{result.roast}</p>
+                </div>
+              </Item>
+            )}
             {result.fit && <Item><FitCard fit={result.fit} /></Item>}
             {result.fit && cv.trim() && (
-              <Item><CloseTheGap ad={ad} cv={cv} score={result.fit.score} gaps={result.fit.gaps} /></Item>
+              <Item><CloseTheGap ad={ad} cv={cv} score={result.fit.score} gaps={result.fit.gaps} lang={used.lang} roast={used.roast} /></Item>
             )}
 
             <Item><Card title="Role summary"><p className="text-[17px] leading-relaxed">{result.role_summary}</p></Card></Item>
@@ -174,6 +251,18 @@ function Index() {
         Built at Lovable Buildathon, Uppsala University.
       </footer>
     </div>
+  );
+}
+
+function Toggle({ on, onChange, label }: { on: boolean; onChange: (v: boolean) => void; label: string }) {
+  return (
+    <button type="button" role="switch" aria-checked={on} onClick={() => onChange(!on)}
+      className={`flex h-12 items-center gap-2.5 rounded-full px-4 text-sm font-semibold transition ${on ? "bg-primary text-primary-foreground shadow-soft" : "glass text-foreground"}`}>
+      <span className={`relative h-5 w-9 rounded-full transition ${on ? "bg-primary-foreground/30" : "bg-muted"}`}>
+        <span className={`absolute top-0.5 h-4 w-4 rounded-full shadow-soft transition-all ${on ? "start-[18px] bg-primary-foreground" : "start-0.5 bg-muted-foreground"}`} />
+      </span>
+      {label}
+    </button>
   );
 }
 
@@ -297,7 +386,7 @@ function FitCard({ fit }: { fit: NonNullable<DecodeResult["fit"]> }) {
             <circle cx="60" cy="60" r={r} className={`fill-none ${color}`} strokeWidth="10"
               strokeLinecap="round" strokeDasharray={c} strokeDashoffset={c * (1 - v / 100)} />
           </svg>
-          <div className="absolute inset-0 flex flex-col items-center justify-center">
+          <div dir="ltr" className="absolute inset-0 flex flex-col items-center justify-center">
             <span className="text-5xl tabular-nums" style={{ fontFamily: "var(--font-display)" }}>{v}</span>
             <span className="text-xs text-muted-foreground">/ 100</span>
           </div>
@@ -316,5 +405,6 @@ function toSummary(r: DecodeResult) {
   const l = (a: string[]) => (a.length ? a.map((x) => `• ${x}`).join("\n") : "• Not specified");
   let s = `ROLE\n${r.role_summary}\n\nMUST-HAVES\n${l(r.must_haves)}\n\nMERITERANDE (NICE-TO-HAVE)\n${l(r.nice_to_haves)}\n\nSWEDISH: ${r.swedish.verdict}\n${r.swedish.reason}\n\nHIDDEN SIGNALS\n${r.hidden_signals.map((h) => `• ${h.phrase}: ${h.explanation}`).join("\n") || "• None"}`;
   if (r.fit) s += `\n\nFIT SCORE: ${r.fit.score}/100\nStrengths:\n${l(r.fit.strengths)}\nGaps:\n${l(r.fit.gaps)}\nAngle: ${r.fit.angle}`;
+  if (r.roast) s += `\n\nROAST 🔥\n${r.roast}`;
   return s + "\n\n— Decoded with Meriterande";
 }

@@ -1,10 +1,11 @@
+import { Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import { ClipboardPaste, Sparkles, Route as RouteIcon, Moon, Sun } from "lucide-react";
 
 export function Wordmark() {
   return (
-    <a href="#top" className="flex items-center gap-2" aria-label="Meriterande home">
+    <Link to="/" className="flex items-center gap-2" aria-label="Meriterande home">
       <span className="relative grid h-8 w-8 place-items-center rounded-xl bg-primary text-primary-foreground shadow-soft">
         <span className="font-display text-xl leading-none" style={{ fontFamily: "var(--font-display)" }}>M</span>
         <span className="absolute -right-0.5 -top-0.5 h-2.5 w-2.5 rounded-full bg-sun ring-2 ring-background" />
@@ -12,7 +13,7 @@ export function Wordmark() {
       <span className="text-[22px] leading-none tracking-tight text-foreground" style={{ fontFamily: "var(--font-display)" }}>
         Meriterande
       </span>
-    </a>
+    </Link>
   );
 }
 
@@ -37,24 +38,37 @@ function ThemeToggle() {
   );
 }
 
+const pill = "rounded-full px-4 py-2 text-sm font-semibold transition";
+const on = "bg-primary text-primary-foreground shadow-soft";
+const off = "text-muted-foreground hover:text-foreground";
+
+function Tabs({ mobile }: { mobile?: boolean }) {
+  const f = mobile ? " flex-1 text-center px-2" : "";
+  return (
+    <>
+      <Link to="/" className={pill + f} activeOptions={{ exact: true }} activeProps={{ className: on }} inactiveProps={{ className: off }}>
+        {mobile ? "Decode" : "Decode a job ad"}
+      </Link>
+      <span title="Coming soon" aria-disabled="true" className={`${pill}${f} cursor-not-allowed text-muted-foreground/70`}>
+        {mobile ? "Thesis · soon" : <>Pitch a thesis <span className="ml-1 rounded-full bg-muted px-1.5 py-0.5 text-[10px] uppercase tracking-wider">soon</span></>}
+      </span>
+      <Link to="/dictionary" className={pill + f} activeProps={{ className: on }} inactiveProps={{ className: off }}>
+        Dictionary
+      </Link>
+    </>
+  );
+}
+
 export function SiteHeader() {
   return (
     <header className="sticky top-0 z-40 border-b border-border/60 bg-background/70 backdrop-blur-xl">
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-3 px-4 sm:px-6">
         <Wordmark />
-        <nav aria-label="Sections" className="glass hidden rounded-full p-1 sm:flex">
-          <span className="rounded-full bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground shadow-soft">Decode a job ad</span>
-          <span title="Coming soon" aria-disabled="true" className="cursor-not-allowed rounded-full px-4 py-2 text-sm font-semibold text-muted-foreground">
-            Pitch a thesis <span className="ml-1 rounded-full bg-muted px-1.5 py-0.5 text-[10px] uppercase tracking-wider">soon</span>
-          </span>
-        </nav>
+        <nav aria-label="Sections" className="glass hidden rounded-full p-1 md:flex"><Tabs /></nav>
         <ThemeToggle />
       </div>
-      <nav aria-label="Sections" className="flex justify-center px-4 pb-2 sm:hidden">
-        <div className="glass flex w-full rounded-full p-1">
-          <span className="flex-1 rounded-full bg-primary py-2 text-center text-sm font-semibold text-primary-foreground">Decode a job ad</span>
-          <span aria-disabled="true" className="flex-1 py-2 text-center text-sm font-semibold text-muted-foreground">Pitch a thesis · soon</span>
-        </div>
+      <nav aria-label="Sections" className="px-4 pb-2 md:hidden">
+        <div className="glass flex w-full rounded-full p-1"><Tabs mobile /></div>
       </nav>
     </header>
   );
