@@ -225,7 +225,7 @@ function ThesisPage() {
             </div>
             <div>
               <span className="mb-2 block text-sm font-semibold text-foreground">Email language</span>
-              <Segmented options={localLang === "English" ? ["English"] : ["English", localLang]} value={emailLang === "English" ? "English" : localLang} onChange={setEmailLang} />
+              <Segmented options={["English", localLang]} value={emailLang === "English" ? "English" : localLang} onChange={setEmailLang} />
             </div>
           </div>
 
