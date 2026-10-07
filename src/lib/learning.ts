@@ -19,7 +19,7 @@ export type Platform = {
 const enc = encodeURIComponent;
 
 export const PLATFORMS: Record<PlatformId, Platform> = {
-  docs: { id: "docs", name: "Official docs", short: "📘", type: "docs", cost: "Free", url: (q) => `https://www.google.com/search?q=${enc(q + " official documentation")}` },
+  docs: { id: "docs", name: "Official docs", short: "Doc", type: "docs", cost: "Free", url: (q) => `https://www.google.com/search?q=${enc(q + " official documentation")}` },
   mslearn: { id: "mslearn", name: "Microsoft Learn", short: "MS", type: "course", cost: "Free", url: (q) => `https://learn.microsoft.com/en-us/search/?terms=${enc(q)}` },
   coursera: { id: "coursera", name: "Coursera", short: "C", type: "course", cost: "Free to audit", url: (q) => `https://www.coursera.org/search?query=${enc(q)}` },
   edx: { id: "edx", name: "edX", short: "eX", type: "course", cost: "Free to audit", url: (q) => `https://www.edx.org/search?q=${enc(q)}` },

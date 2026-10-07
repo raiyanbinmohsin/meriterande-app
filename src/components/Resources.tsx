@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { motion } from "motion/react";
-import { Check, ExternalLink, ShieldCheck } from "lucide-react";
+import { Check, ExternalLink } from "lucide-react";
 import type { Resource } from "@/lib/learning";
 
 export function ResourceCards({ items, compact }: { items: Resource[]; compact?: boolean }) {
@@ -19,7 +19,7 @@ export function ResourceCards({ items, compact }: { items: Resource[]; compact?:
             <span className="mt-1 flex flex-wrap gap-1 text-[10px] font-semibold uppercase tracking-wide">
               <span className="rounded-full bg-success/15 px-1.5 py-0.5 text-success">{r.cost}</span>
               <span className="rounded-full bg-muted px-1.5 py-0.5 text-muted-foreground">{r.type}</span>
-              <span className="inline-flex items-center gap-0.5 rounded-full bg-secondary px-1.5 py-0.5 text-secondary-foreground"><ShieldCheck className="h-3 w-3" />✓ Trusted source</span>
+              <span className="whitespace-nowrap rounded-full bg-secondary px-1.5 py-0.5 text-secondary-foreground">✓ Trusted source</span>
             </span>
           </span>
         </a>
