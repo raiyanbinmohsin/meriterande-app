@@ -28,7 +28,7 @@ export function CloseTheGap({ ad, cv, score, gaps }: { ad: string; cv: string; s
   const pct = total ? Math.round((checked / total) * 100) : 0;
 
   return (
-    <div className="rounded-3xl border border-border bg-card p-6 shadow-soft animate-fade-up">
+    <div className="glass lift rounded-3xl p-6 sm:p-8">
       <h3 className="mb-1 text-2xl font-semibold">Close the gap</h3>
       <p className="mb-5 text-muted-foreground">A personalized roadmap from your current fit of {score}/100.</p>
 
