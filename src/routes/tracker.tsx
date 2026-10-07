@@ -66,6 +66,7 @@ function TrackerPage() {
       <main className="mx-auto max-w-7xl px-4 pb-20 sm:px-6">
         {!jobs.length && (
           <div className="glass mb-6 rounded-3xl p-6 text-center text-muted-foreground">
+            <EmptyBoardIllustration className="mx-auto mb-3 h-28 w-auto" />
             No applications yet. <Link to="/" className="font-semibold text-primary underline-offset-4 hover:underline">Decode a job ad</Link> and click "Save to tracker".
           </div>
         )}

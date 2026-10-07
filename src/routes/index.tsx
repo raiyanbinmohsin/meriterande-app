@@ -16,7 +16,7 @@ import { useCvText } from "@/lib/cv-store";
 import { motion, AnimatePresence } from "motion/react";
 import { SiteHeader, Hero, HowItWorks, Wordmark, CareerCentres } from "@/components/landing";
 
-const TITLE = "Meriterande — Decode any Swedish job ad in 5 seconds";
+const TITLE = "Meriterande — Decode job ads, close the gap";
 const DESC = "Know what's required, what's 'meriterande', and whether you actually need Swedish. A job-ad decoder for international job seekers in Sweden.";
 
 export const Route = createFileRoute("/")({
