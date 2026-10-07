@@ -1,6 +1,8 @@
 import { createServerFn } from "@tanstack/react-start";
 
 export type DecodeResult = {
+  job_title: string;
+  company: string;
   role_summary: string;
   must_haves: string[];
   nice_to_haves: string[];
@@ -12,9 +14,22 @@ export type DecodeResult = {
 
 export const LANGS = ["English", "Swedish", "Arabic", "Persian", "Bengali", "Ukrainian", "Spanish", "Hindi", "Turkish", "Somali", "Polish", "Chinese"] as const;
 
-export function styleRules(lang: string, roast: boolean) {
+export const COUNTRIES = [
+  { name: "Sweden", adj: "Swedish", lang: "Swedish" },
+  { name: "Norway", adj: "Norwegian", lang: "Norwegian" },
+  { name: "Denmark", adj: "Danish", lang: "Danish" },
+  { name: "Finland", adj: "Finnish", lang: "Finnish" },
+  { name: "Germany", adj: "German", lang: "German" },
+  { name: "Netherlands", adj: "Dutch", lang: "Dutch" },
+] as const;
+export const countryOf = (name: string) => COUNTRIES.find((c) => c.name === name) ?? COUNTRIES[0];
+
+export function styleRules(lang: string, roast: boolean, country = "Sweden") {
   const l = (LANGS as readonly string[]).includes(lang) ? lang : "English";
-  return `\nOUTPUT LANGUAGE: Write every explanation, summary, list item, tip and sentence in ${l}. Exact phrases quoted from the ad (in quotation marks) and Swedish term names stay in their original language. Enum values stay exactly as specified in English.` +
+  const c = countryOf(country);
+  const market = c.name === "Sweden" ? "" :
+    `\nTARGET JOB MARKET: ${c.name}. Decode the ad for the ${c.name} job market instead of Sweden. The "swedish" field is the verdict on whether ${c.lang} is required (apply the same verdict rules to ${c.lang}). nice_to_haves include items marked as advantages in ${c.lang}. hidden_signals are ${c.adj} job-ad and workplace terms actually present in the ad (contract types, probation, benefits, collective agreements, etc.), explained with ${c.name} norms.`;
+  return market + `\nOUTPUT LANGUAGE: Write every explanation, summary, list item, tip and sentence in ${l}. Exact phrases quoted from the ad (in quotation marks) and Swedish term names stay in their original language. Enum values stay exactly as specified in English.` +
     (roast
       ? `\nROAST MODE ON: write verdicts, reasoning and gaps in a funny, savage-but-kind tone. Roast the gap, never the person — no insults about identity, background, intelligence or appearance. Stay accurate; humour never changes the facts.`
       : "");
@@ -24,8 +39,10 @@ const strArr = { type: "array", items: { type: "string" } };
 const schema = {
   type: "object",
   additionalProperties: false,
-  required: ["role_summary", "must_haves", "nice_to_haves", "swedish", "hidden_signals", "fit", "roast"],
+  required: ["job_title", "company", "role_summary", "must_haves", "nice_to_haves", "swedish", "hidden_signals", "fit", "roast"],
   properties: {
+    job_title: { type: "string" },
+    company: { type: "string" },
     role_summary: { type: "string" },
     must_haves: strArr,
     nice_to_haves: strArr,
@@ -73,6 +90,7 @@ const SYSTEM = `You decode Swedish (or English) job ads for international job se
 STRICT RULES:
 - Never invent requirements, benefits or facts that are not in the ad. Only use what the text says.
 - If something is unknown or not mentioned, write "not specified".
+- job_title: the job title as written in the ad; company: the employer name, or "not specified".
 - role_summary: 2-3 plain-English sentences.
 - must_haves: explicit requirements ("krav", "du har", "vi söker dig som", "required"). Translate to English.
 - nice_to_haves: things marked "meriterande", "plus", "fördel", "nice to have". Translate to English.
@@ -82,12 +100,12 @@ STRICT RULES:
 - roast: "" unless ROAST MODE is on; then one or two punchy, kind sentences roasting the gap between CV and ad (or the ad itself if no CV).`;
 
 export const decodeAd = createServerFn({ method: "POST" })
-  .inputValidator((d: { ad: string; cv?: string; lang?: string; roast?: boolean }) => {
+  .inputValidator((d: { ad: string; cv?: string; lang?: string; roast?: boolean; country?: string }) => {
     const ad = String(d?.ad ?? "").trim();
     const cv = String(d?.cv ?? "").trim();
     if (ad.length < 30) throw new Error("Please paste a longer job ad.");
     if (ad.length > 20000 || cv.length > 20000) throw new Error("Text is too long (max 20,000 characters each).");
-    return { ad, cv, lang: String(d?.lang ?? "English"), roast: !!d?.roast };
+    return { ad, cv, lang: String(d?.lang ?? "English"), roast: !!d?.roast, country: countryOf(String(d?.country ?? "Sweden")).name };
   })
   .handler(async ({ data }): Promise<{ ok: true; result: DecodeResult } | { ok: false; error: string }> => {
     const key = process.env["LOVABLE_API_KEY"];
@@ -102,7 +120,7 @@ export const decodeAd = createServerFn({ method: "POST" })
       },
       body: JSON.stringify({
         model: "openai/gpt-6-astra",
-        instructions: SYSTEM + styleRules(data.lang, data.roast),
+        instructions: SYSTEM + styleRules(data.lang, data.roast, data.country),
         input,
         stream: true,
         store: false,

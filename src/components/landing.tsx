@@ -1,7 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
-import { ClipboardPaste, Sparkles, Route as RouteIcon, Moon, Sun } from "lucide-react";
+import { ClipboardPaste, Sparkles, Route as RouteIcon, Moon, Sun, Languages, Compass, HeartHandshake, Mail } from "lucide-react";
 
 export function Wordmark() {
   return (
@@ -43,7 +43,7 @@ const on = "bg-primary text-primary-foreground shadow-soft";
 const off = "text-muted-foreground hover:text-foreground";
 
 function Tabs({ mobile }: { mobile?: boolean }) {
-  const f = mobile ? " flex-1 text-center px-2" : "";
+  const f = mobile ? " flex-1 whitespace-nowrap text-center px-3" : "";
   return (
     <>
       <Link to="/" className={pill + f} activeOptions={{ exact: true }} activeProps={{ className: on }} inactiveProps={{ className: off }}>
@@ -54,6 +54,9 @@ function Tabs({ mobile }: { mobile?: boolean }) {
       </span>
       <Link to="/dictionary" className={pill + f} activeProps={{ className: on }} inactiveProps={{ className: off }}>
         Dictionary
+      </Link>
+      <Link to="/tracker" className={pill + f} activeProps={{ className: on }} inactiveProps={{ className: off }}>
+        Tracker
       </Link>
     </>
   );
@@ -68,7 +71,7 @@ export function SiteHeader() {
         <ThemeToggle />
       </div>
       <nav aria-label="Sections" className="px-4 pb-2 md:hidden">
-        <div className="glass flex w-full rounded-full p-1"><Tabs mobile /></div>
+        <div className="glass flex w-full overflow-x-auto rounded-full p-1 text-[13px] [&>*]:shrink-0"><Tabs mobile /></div>
       </nav>
     </header>
   );
@@ -124,7 +127,7 @@ function DecodePreview() {
   );
 }
 
-export function Hero() {
+export function Hero({ adj = "Swedish", country = "Sweden" }: { adj?: string; country?: string }) {
   return (
     <section id="top" className="relative isolate overflow-hidden">
       <div className="mesh pointer-events-none absolute -inset-20 -z-10" />
@@ -132,11 +135,11 @@ export function Hero() {
       <div className="mx-auto max-w-4xl px-5 pb-16 pt-16 text-center sm:pb-24 sm:pt-28">
         <motion.p initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}
           className="glass mx-auto mb-6 inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-sm font-medium text-foreground">
-          <span className="h-2 w-2 rounded-full bg-sun" /> For international job seekers in Sweden
+          <span className="h-2 w-2 rounded-full bg-sun" /> For international job seekers in {country}
         </motion.p>
         <motion.h1 initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.05, ease: [0.2, 0.8, 0.2, 1] }}
           className="text-[44px] leading-[0.98] text-foreground sm:text-7xl md:text-[88px]">
-          Decode any Swedish job ad <em className="text-primary">in 5 seconds.</em>
+          Decode any {adj} job ad <em className="text-primary">in 5 seconds.</em>
         </motion.h1>
         <motion.p initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.15 }}
           className="mx-auto mt-6 max-w-xl text-lg text-muted-foreground sm:text-xl">
@@ -178,6 +181,44 @@ export function HowItWorks() {
           </motion.div>
         ))}
       </div>
+    </section>
+  );
+}
+
+const BENEFITS = [
+  { icon: Languages, title: "A translator for every ad", text: "Students see what's required, what's a plus and whether the local language is really needed — in their own language." },
+  { icon: Compass, title: "Honest, actionable plans", text: "Fit scores and gap roadmaps turn vague advice into concrete next steps your advisers can build on." },
+  { icon: HeartHandshake, title: "Less repetition for advisers", text: "Free up appointments from decoding jargon so time goes to coaching, networking and interviews." },
+];
+
+export function CareerCentres() {
+  return (
+    <section className="mx-auto max-w-5xl px-5 py-16 sm:py-24">
+      <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, margin: "-80px" }} transition={{ duration: 0.6 }}
+        className="relative isolate overflow-hidden rounded-[2rem] bg-navy p-7 text-center sm:p-12">
+        <div className="mesh pointer-events-none absolute -inset-10 -z-10 opacity-60" />
+        <p className="text-sm font-bold uppercase tracking-[0.16em] text-sun">For career centres</p>
+        <h2 className="mx-auto mt-3 max-w-2xl text-4xl leading-tight text-primary-foreground sm:text-5xl dark:text-foreground">
+          Give every international student a job-market translator.
+        </h2>
+        <p className="mx-auto mt-4 max-w-xl text-primary-foreground/75 dark:text-muted-foreground">
+          Bring Meriterande to your university's students and alumni, so local job ads stop being a barrier.
+        </p>
+        <div className="mt-10 grid gap-4 text-start sm:grid-cols-3">
+          {BENEFITS.map((b, i) => (
+            <motion.div key={b.title} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.5, delay: 0.1 + i * 0.1 }}
+              className="lift rounded-3xl border border-glass-border bg-card p-6 shadow-soft">
+              <span className="grid h-11 w-11 place-items-center rounded-2xl bg-sun/20 text-sun"><b.icon className="h-5 w-5" /></span>
+              <h3 className="mt-4 text-2xl text-foreground">{b.title}</h3>
+              <p className="mt-1.5 text-sm text-muted-foreground">{b.text}</p>
+            </motion.div>
+          ))}
+        </div>
+        <a href="mailto:raiyanbinmohsinshishir@gmail.com?subject=Partnering%20with%20Meriterande"
+          className="mt-10 inline-flex h-14 items-center gap-2 rounded-full bg-sun px-8 text-base font-semibold text-navy shadow-lift transition hover:-translate-y-0.5">
+          <Mail className="h-5 w-5" /> Partner with us
+        </a>
+      </motion.div>
     </section>
   );
 }
