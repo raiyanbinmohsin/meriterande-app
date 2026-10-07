@@ -1,5 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import { BookmarkletButton } from "./Bookmarklet";
+import { AccountMenu } from "./AccountMenu";
 import { HeroIllustration, StepIllustration, CampusIllustration } from "./illustrations";
 import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
@@ -73,7 +74,7 @@ export function SiteHeader() {
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-3 px-4 sm:px-6">
         <Wordmark />
         <nav aria-label="Sections" className="glass hidden rounded-full p-1 xl:flex"><Tabs /></nav>
-        <div className="flex items-center gap-2"><BookmarkletButton /><ThemeToggle /></div>
+        <div className="flex items-center gap-2"><BookmarkletButton /><ThemeToggle /><AccountMenu /></div>
       </div>
       <nav aria-label="Sections" className="mx-auto max-w-3xl px-4 pb-2 xl:hidden">
         <div className="glass flex w-full overflow-x-auto rounded-full p-1 text-[13px] [&>*]:shrink-0"><Tabs mobile /></div>
@@ -227,7 +228,26 @@ export function CareerCentres() {
           className="mt-10 inline-flex h-14 items-center gap-2 rounded-full bg-sun px-8 text-base font-semibold text-navy shadow-lift transition hover:-translate-y-0.5">
           <Mail className="h-5 w-5" /> Partner with us
         </a>
+        <p className="mt-5 text-sm text-primary-foreground/75 dark:text-muted-foreground">
+          Hiring? <Link to="/employers" className="font-semibold text-sun underline-offset-4 hover:underline">Check if your job ad scares off international talent →</Link>
+          {" · "}<Link to="/insights" className="font-semibold text-sun underline-offset-4 hover:underline">Anonymous skill-gap insights</Link>
+        </p>
       </motion.div>
     </section>
+  );
+}
+
+export function SiteFooter() {
+  return (
+    <footer className="border-t border-border py-10 text-center text-sm text-muted-foreground">
+      <div className="mb-3 flex justify-center opacity-80"><Wordmark /></div>
+      <nav aria-label="Footer" className="mb-3 flex flex-wrap justify-center gap-x-5 gap-y-2">
+        <Link to="/employers" className="font-semibold text-foreground hover:text-primary">For employers</Link>
+        <Link to="/learn" search={{ phrase: undefined }} className="hover:text-foreground">Swedish micro-lessons</Link>
+        <Link to="/interview" className="hover:text-foreground">Mock interview</Link>
+        <Link to="/insights" className="hover:text-foreground">Career-centre insights</Link>
+      </nav>
+      Built at Lovable Buildathon, Uppsala University.
+    </footer>
   );
 }

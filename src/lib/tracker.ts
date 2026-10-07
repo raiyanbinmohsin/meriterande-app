@@ -39,6 +39,9 @@ function write(jobs: Job[]) {
 export function useJobs() {
   return useSyncExternalStore((f) => { subs.add(f); return () => subs.delete(f); }, read, () => EMPTY);
 }
+export const getJobs = () => read();
+export const replaceJobs = (jobs: Job[]) => write(jobs);
+export function subscribeJobs(f: () => void) { subs.add(f); return () => { subs.delete(f); }; }
 
 export function addJob(j: Pick<Job, "title" | "company" | "score" | "verdict"> & { kind?: JobKind }) {
   const job: Job = { kind: "job", ...j, id: crypto.randomUUID(), savedOn: today(), column: "Saved", notes: "", deadline: "", appliedOn: "", reachedInterview: false };

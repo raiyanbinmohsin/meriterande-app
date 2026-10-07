@@ -14,7 +14,12 @@ import { CloseTheGap } from "@/components/CloseTheGap";
 import { CvUpload } from "@/components/CvUpload";
 import { useCvText } from "@/lib/cv-store";
 import { motion, AnimatePresence } from "motion/react";
-import { SiteHeader, Hero, HowItWorks, Wordmark, CareerCentres } from "@/components/landing";
+import { SiteHeader, Hero, HowItWorks, CareerCentres, SiteFooter } from "@/components/landing";
+import { CoverLetter } from "@/components/CoverLetter";
+import { SuccessStories } from "@/components/SuccessStories";
+import { recordInsight } from "@/lib/sync";
+import { addSeenPhrases } from "@/lib/progress";
+import { BarChart3, GraduationCap } from "lucide-react";
 
 const TITLE = "Meriterande — Decode job ads, close the gap";
 const DESC = "Know what's required, what's 'meriterande', and whether you actually need Swedish. A job-ad decoder for international job seekers in Sweden.";
@@ -98,6 +103,8 @@ function Index() {
         setUsed({ lang, roast, country });
         setResult(r.result);
         setSavedId(null);
+        if (country === "Sweden") addSeenPhrases(r.result.hidden_signals.map((h) => h.phrase));
+        if (r.result.fit) void recordInsight(r.result.job_title, r.result.fit.score, r.result.fit.gaps);
         setTimeout(() => document.getElementById("results")?.scrollIntoView({ behavior: "smooth" }), 50);
       } else setError(r.error);
     } catch (e) {
@@ -253,6 +260,10 @@ function Index() {
               <Item><CloseTheGap ad={ad} cv={cv} score={result.fit.score} gaps={result.fit.gaps} lang={used.lang} roast={used.roast} country={used.country} /></Item>
             )}
 
+            {result.fit && cv.trim() && (
+              <Item><CoverLetter ad={ad} cv={cv} localLang={countryOf(used.country).lang} /></Item>
+            )}
+
             <Item><Card title="Role summary"><p className="text-[17px] leading-relaxed">{result.role_summary}</p></Card></Item>
 
             <Item><SwedishCard s={result.swedish} title={`${countryOf(used.country).lang} language`} /></Item>
@@ -272,20 +283,34 @@ function Index() {
                       <div key={i}>
                         <dt className="inline-block rounded-lg bg-accent px-2.5 py-0.5 text-sm font-semibold text-accent-foreground">{h.phrase}</dt>
                         <dd className="mt-1 text-muted-foreground">{h.explanation}</dd>
+                        {used.country === "Sweden" && (
+                          <Link to="/learn" search={{ phrase: h.phrase }} className="mt-1 inline-flex min-h-9 items-center gap-1.5 text-sm font-semibold text-primary">
+                            <GraduationCap className="h-4 w-4" /> Mini lesson
+                          </Link>
+                        )}
                       </div>
                     ))}
                   </dl>
                 )}
               </Card>
             </Item>
+
+            {used.country === "Sweden" && (
+              <Item>
+                <a href="https://www.scb.se/hitta-statistik/sverige-i-siffror/lonesok/" target="_blank" rel="noopener noreferrer"
+                  className="glass lift flex items-center gap-4 rounded-3xl p-5">
+                  <span className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-sun/25 text-foreground"><BarChart3 className="h-6 w-6" /></span>
+                  <span><span className="block text-lg font-semibold text-foreground">Check salary statistics ↗</span>
+                    <span className="text-sm text-muted-foreground">Official salary data from Statistics Sweden (SCB Lönesök). We don't estimate salaries.</span></span>
+                </a>
+              </Item>
+            )}
           </motion.section>
         )}
       </main>
       <CareerCentres />
-      <footer className="border-t border-border py-10 text-center text-sm text-muted-foreground">
-        <div className="mb-3 flex justify-center opacity-80"><Wordmark /></div>
-        Built at Lovable Buildathon, Uppsala University.
-      </footer>
+      <SuccessStories />
+      <SiteFooter />
     </div>
   );
 }
