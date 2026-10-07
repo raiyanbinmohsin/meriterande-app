@@ -54,7 +54,7 @@ const schema = {
   },
 };
 
-const SYSTEM = `You build honest, personalized upskilling roadmaps for international job seekers in Sweden, based ONLY on the gaps between their CV and a specific job ad. Reply in plain English.
+const SYSTEM = `You build honest, personalized upskilling roadmaps for international job seekers, based ONLY on the gaps between their CV and a specific job ad. Reply in plain English.
 RULES:
 - Exactly 5 milestones, in order: "7 days", "14 days", "1 month", "2 months", "6 months".
 - Each milestone: one-sentence goal; 2-4 concrete tasks realistically sized to the given hours per week (cumulative time available by that horizon); a FREE resource type matching the learning style (e.g. "official docs", "a small portfolio project", "free YouTube course") — never specific URLs, brand course names or links; a concrete proof of skill to add to the CV (e.g. "GitHub repo: streaming pipeline with Kafka"); a projected fit score (0-100) if completed. Scores start from the current score and must not decrease.
@@ -63,7 +63,7 @@ RULES:
 - Do not invent facts about the candidate or the ad.`;
 
 export const buildPlan = createServerFn({ method: "POST" })
-  .inputValidator((d: { ad: string; cv: string; score: number; gaps: string[]; hours: number; styles: string[]; target: string; lang?: string; roast?: boolean }) => {
+  .inputValidator((d: { ad: string; cv: string; score: number; gaps: string[]; hours: number; styles: string[]; target: string; lang?: string; roast?: boolean; country?: string }) => {
     const ad = String(d?.ad ?? "").trim(), cv = String(d?.cv ?? "").trim();
     if (!ad || !cv) throw new Error("A job ad and CV are required.");
     if (ad.length > 20000 || cv.length > 20000) throw new Error("Text is too long.");
@@ -71,7 +71,7 @@ export const buildPlan = createServerFn({ method: "POST" })
     const styles = (Array.isArray(d.styles) ? d.styles : []).map(String).slice(0, 4);
     const target = String(d.target ?? "1 month").slice(0, 20);
     const gaps = (Array.isArray(d.gaps) ? d.gaps : []).map(String).slice(0, 10);
-    return { lang: String(d.lang ?? "English"), roast: !!d.roast, ad, cv, score: Math.max(0, Math.min(100, Number(d.score) || 0)), gaps, hours, styles, target };
+    return { country: String(d.country ?? "Sweden"), lang: String(d.lang ?? "English"), roast: !!d.roast, ad, cv, score: Math.max(0, Math.min(100, Number(d.score) || 0)), gaps, hours, styles, target };
   })
   .handler(async ({ data }): Promise<{ ok: true; result: PlanResult } | { ok: false; error: string }> => {
     const key = process.env["LOVABLE_API_KEY"];
@@ -82,7 +82,7 @@ export const buildPlan = createServerFn({ method: "POST" })
       headers: { "Content-Type": "application/json", "Lovable-API-Key": key, "X-Lovable-AIG-SDK": "fetch" },
       body: JSON.stringify({
         model: "openai/gpt-6-astra",
-        instructions: SYSTEM + styleRules(data.lang, data.roast),
+        instructions: SYSTEM + styleRules(data.lang, data.roast, data.country),
         input,
         stream: true,
         store: false,
