@@ -78,7 +78,7 @@ function DecodePreview() {
     }, 1900);
     return () => clearInterval(t);
   }, []);
-  const p = PREVIEW[i];
+  const p = PREVIEW[i] ?? PREVIEW[0]!;
   return (
     <div aria-hidden className="glass relative mx-auto mt-12 w-full max-w-md overflow-hidden rounded-3xl p-5 text-left">
       <div className="mb-3 flex items-center gap-1.5">

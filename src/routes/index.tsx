@@ -116,7 +116,7 @@ function Index() {
           </div>
         </motion.section>
 
-        {loading && <LoadingSkeleton msg={LOADING[msgIdx]} msgKey={msgIdx} />}
+        {loading && <LoadingSkeleton msg={LOADING[msgIdx] ?? ""} msgKey={msgIdx} />}
 
         {error && (
           <motion.div role="alert" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
