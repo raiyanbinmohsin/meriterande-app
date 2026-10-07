@@ -1,4 +1,5 @@
 import { Link } from "@tanstack/react-router";
+import { BookmarkletButton } from "./Bookmarklet";
 import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import { ClipboardPaste, Sparkles, Route as RouteIcon, Moon, Sun, Languages, Compass, HeartHandshake, Mail } from "lucide-react";
@@ -52,6 +53,9 @@ function Tabs({ mobile }: { mobile?: boolean }) {
       <span title="Coming soon" aria-disabled="true" className={`${pill}${f} cursor-not-allowed text-muted-foreground/70`}>
         {mobile ? "Thesis · soon" : <>Pitch a thesis <span className="ml-1 rounded-full bg-muted px-1.5 py-0.5 text-[10px] uppercase tracking-wider">soon</span></>}
       </span>
+      <Link to="/find" className={pill + f} activeProps={{ className: on }} inactiveProps={{ className: off }}>
+        {mobile ? "Find jobs" : "Find jobs I fit"}
+      </Link>
       <Link to="/dictionary" className={pill + f} activeProps={{ className: on }} inactiveProps={{ className: off }}>
         Dictionary
       </Link>
@@ -67,10 +71,10 @@ export function SiteHeader() {
     <header className="sticky top-0 z-40 border-b border-border/60 bg-background/70 backdrop-blur-xl">
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-3 px-4 sm:px-6">
         <Wordmark />
-        <nav aria-label="Sections" className="glass hidden rounded-full p-1 md:flex"><Tabs /></nav>
-        <ThemeToggle />
+        <nav aria-label="Sections" className="glass hidden rounded-full p-1 xl:flex"><Tabs /></nav>
+        <div className="flex items-center gap-2"><BookmarkletButton /><ThemeToggle /></div>
       </div>
-      <nav aria-label="Sections" className="px-4 pb-2 md:hidden">
+      <nav aria-label="Sections" className="mx-auto max-w-3xl px-4 pb-2 xl:hidden">
         <div className="glass flex w-full overflow-x-auto rounded-full p-1 text-[13px] [&>*]:shrink-0"><Tabs mobile /></div>
       </nav>
     </header>

@@ -57,5 +57,5 @@ export const TERMS: Term[] = [
 
 const escape = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 const sorted = [...TERMS].sort((a, b) => b.term.length - a.term.length);
-export const TERM_RE = new RegExp(`(${sorted.map((t) => escape(t.term)).join("|")})`, "gi");
+export const TERM_RE = new RegExp(`(?<!\\p{L})(${sorted.map((t) => escape(t.term)).join("|")})(?!\\p{L})`, "giu");
 export const findTerm = (s: string) => TERMS.find((t) => t.term.toLowerCase() === s.toLowerCase());

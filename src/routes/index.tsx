@@ -3,6 +3,7 @@ import { AdLinkFetch } from "@/components/AdLinkFetch";
 import { useEffect, useState } from "react";
 import { decodeAd, LANGS, COUNTRIES, countryOf, type DecodeResult } from "@/lib/decode.functions";
 import { addJob } from "@/lib/tracker";
+import { takePendingAd } from "@/lib/ad-store";
 import { Link } from "@tanstack/react-router";
 import { recommendAd, type CompareResult } from "@/lib/compare.functions";
 import { CompareTable } from "@/components/CompareTable";
@@ -54,6 +55,19 @@ function Index() {
   const [country, setCountry] = useState("Sweden");
   const [savedId, setSavedId] = useState<string | null>(null);
   const cInfo = countryOf(country);
+  const [incoming, setIncoming] = useState<{ url?: string | undefined; text?: boolean }>({});
+
+  useEffect(() => {
+    const pend = takePendingAd();
+    if (pend) { setAd(pend); return; }
+    const sp = new URLSearchParams(window.location.search);
+    const url = sp.get("url") ?? undefined, text = sp.get("text") ?? "";
+    if (!url && !text) return;
+    if (text) setAd(text);
+    setIncoming({ url, text: !!text });
+    window.history.replaceState(null, "", "/#decode");
+    setTimeout(() => document.getElementById("decode")?.scrollIntoView({ behavior: "smooth" }), 300);
+  }, []);
   const [compare, setCompare] = useState(false);
   const [extraAds, setExtraAds] = useState<string[]>(["", ""]);
   const [compareRes, setCompareRes] = useState<DecodeResult[] | null>(null);
@@ -142,7 +156,7 @@ function Index() {
             <h2 className="text-3xl text-foreground sm:text-4xl">Decode a job ad</h2>
             <p className="mt-1 text-muted-foreground">Paste it, drop a link, or try the example.</p>
           </div>
-          <AdLinkFetch onText={(t) => { setAd(t); setError(null); }} />
+          <AdLinkFetch autoUrl={incoming.url} autoFetch={!incoming.text} onText={(t) => { setAd(t); setError(null); }} />
           <Field label={compare ? "Job ad 1" : "Paste the job ad (Swedish or English)"} required value={ad} onChange={setAd} rows={9}
             placeholder="Vi söker en Data Engineer till vårt team i Stockholm..." />
           {!compare && country === "Sweden" && <HighlightedAd text={ad} />}
