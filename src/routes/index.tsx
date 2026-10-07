@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { AdLinkFetch } from "@/components/AdLinkFetch";
 import { useEffect, useState } from "react";
 import { decodeAd, type DecodeResult } from "@/lib/decode.functions";
 import { SAMPLE_AD } from "@/lib/sample-ad";
@@ -34,7 +35,6 @@ const LOADING = [
 
 function Index() {
   const [ad, setAd] = useState("");
-  // AdLinkFetch fills the job ad text area from a URL
   const [cv, setCv] = useCvText();
   const [loading, setLoading] = useState(false);
   const [msgIdx, setMsgIdx] = useState(0);
