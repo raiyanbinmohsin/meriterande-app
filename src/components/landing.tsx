@@ -41,7 +41,7 @@ function ThemeToggle() {
   );
 }
 
-const pill = "rounded-full px-4 py-2 text-sm font-semibold transition";
+const pill = "whitespace-nowrap rounded-full px-3.5 py-2 text-sm font-semibold transition";
 const on = "bg-primary text-primary-foreground shadow-soft";
 const off = "text-muted-foreground hover:text-foreground";
 

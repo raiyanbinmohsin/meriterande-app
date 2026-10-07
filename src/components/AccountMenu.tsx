@@ -25,7 +25,7 @@ export function AccountMenu() {
   if (!user) {
     return (
       <Link to="/auth" className="glass inline-flex h-11 items-center gap-2 rounded-full px-4 text-sm font-semibold text-foreground transition hover:-translate-y-0.5">
-        <Cloud className="h-4 w-4" /><span className="hidden sm:inline">Sign in to sync</span><span className="sm:hidden">Sign in</span>
+        <Cloud className="h-4 w-4" /><span className="hidden whitespace-nowrap sm:inline xl:hidden 2xl:inline">Sign in to sync</span><span className="whitespace-nowrap sm:hidden xl:inline 2xl:hidden">Sign in</span>
       </Link>
     );
   }
