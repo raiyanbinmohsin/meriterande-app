@@ -26,7 +26,7 @@ const DOT: Record<Column, string> = { Saved: "bg-muted-foreground", Applied: "bg
 
 type KindFilter = "all" | "job" | "thesis";
 const KIND_LABEL: Record<string, string> = { job: "Job", thesis: "Thesis pitch" };
-const KIND_BADGE: Record<string, string> = { job: "bg-primary/12 text-primary", thesis: "bg-sun/20 text-sun-foreground" };
+const KIND_BADGE: Record<string, string> = { job: "bg-primary/12 text-primary", thesis: "bg-sun/40 text-foreground" };
 const kindOf = (j: Job) => j.kind ?? "job";
 
 function TrackerPage() {
@@ -62,6 +62,17 @@ function TrackerPage() {
               <Download className="h-4 w-4" /> Export CSV
             </button>
           </div>
+          <div className="mt-6 flex flex-wrap gap-2" role="group" aria-label="Filter cards">
+            {([["all", "All"], ["job", "Jobs"], ["thesis", "Thesis pitches"]] as [KindFilter, string][]).map(([k, label]) => (
+              <button key={k} onClick={() => setKindFilter(k)} aria-pressed={kindFilter === k}
+                className={`inline-flex h-11 items-center rounded-full px-5 text-sm font-semibold transition ${kindFilter === k ? "bg-primary text-primary-foreground shadow-soft" : "glass text-foreground hover:-translate-y-0.5"}`}>
+                {label}
+                <span className={`ml-2 rounded-full px-2 text-xs font-bold ${kindFilter === k ? "bg-primary-foreground/20 text-primary-foreground" : "bg-muted text-muted-foreground"}`}>
+                  {k === "all" ? jobs.length : jobs.filter((j) => kindOf(j) === k).length}
+                </span>
+              </button>
+            ))}
+          </div>
           <div className="mt-8 grid grid-cols-2 gap-3 md:grid-cols-4">
             <Stat label="Streak" value={`🔥 ${s}-day`} sub="application streak" />
             <Stat label="Total applied" value={String(applied)} />
@@ -80,7 +91,7 @@ function TrackerPage() {
         )}
         <div className="-mx-4 flex snap-x gap-4 overflow-x-auto px-4 pb-4 lg:mx-0 lg:grid lg:grid-cols-5 lg:overflow-visible lg:px-0">
           {COLUMNS.map((col) => {
-            const list = jobs.filter((j) => j.column === col);
+            const list = visible.filter((j) => j.column === col);
             return (
               <section key={col}
                 onDragOver={(e) => { e.preventDefault(); setOver(col); }}
@@ -133,6 +144,7 @@ function JobCard({ job }: { job: Job }) {
         {job.score != null && <span className="rounded-full bg-primary/12 px-2.5 py-0.5 text-sm font-bold text-primary">{job.score}</span>}
       </div>
       <div className="mt-2 flex flex-wrap gap-1.5 text-xs">
+        <span className={`rounded-full px-2 py-0.5 font-semibold ${KIND_BADGE[kindOf(job)]}`}>{KIND_LABEL[kindOf(job)]}</span>
         <span className="rounded-full bg-muted px-2 py-0.5 text-muted-foreground">{job.verdict}</span>
         <span className="rounded-full bg-muted px-2 py-0.5 text-muted-foreground">Saved {job.savedOn}</span>
         {left != null && (
