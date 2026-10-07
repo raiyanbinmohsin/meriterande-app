@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as DictionaryRouteImport } from './routes/dictionary'
 import { Route as FindRouteImport } from './routes/find'
+import { Route as ThesisRouteImport } from './routes/thesis'
 import { Route as TrackerRouteImport } from './routes/tracker'
 
 const IndexRoute = IndexRouteImport.update({
@@ -29,6 +30,11 @@ const FindRoute = FindRouteImport.update({
   path: '/find',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ThesisRoute = ThesisRouteImport.update({
+  id: '/thesis',
+  path: '/thesis',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const TrackerRoute = TrackerRouteImport.update({
   id: '/tracker',
   path: '/tracker',
@@ -39,12 +45,14 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/dictionary': typeof DictionaryRoute
   '/find': typeof FindRoute
+  '/thesis': typeof ThesisRoute
   '/tracker': typeof TrackerRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/dictionary': typeof DictionaryRoute
   '/find': typeof FindRoute
+  '/thesis': typeof ThesisRoute
   '/tracker': typeof TrackerRoute
 }
 export interface FileRoutesById {
@@ -52,20 +60,22 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/dictionary': typeof DictionaryRoute
   '/find': typeof FindRoute
+  '/thesis': typeof ThesisRoute
   '/tracker': typeof TrackerRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/dictionary' | '/find' | '/tracker'
+  fullPaths: '/' | '/dictionary' | '/find' | '/thesis' | '/tracker'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/dictionary' | '/find' | '/tracker'
-  id: '__root__' | '/' | '/dictionary' | '/find' | '/tracker'
+  to: '/' | '/dictionary' | '/find' | '/thesis' | '/tracker'
+  id: '__root__' | '/' | '/dictionary' | '/find' | '/thesis' | '/tracker'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   DictionaryRoute: typeof DictionaryRoute
   FindRoute: typeof FindRoute
+  ThesisRoute: typeof ThesisRoute
   TrackerRoute: typeof TrackerRoute
 }
 
@@ -92,6 +102,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof FindRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/thesis': {
+      id: '/thesis'
+      path: '/thesis'
+      fullPath: '/thesis'
+      preLoaderRoute: typeof ThesisRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/tracker': {
       id: '/tracker'
       path: '/tracker'
@@ -106,6 +123,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   DictionaryRoute: DictionaryRoute,
   FindRoute: FindRoute,
+  ThesisRoute: ThesisRoute,
   TrackerRoute: TrackerRoute,
 }
 export const routeTree = rootRouteImport
