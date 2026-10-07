@@ -30,14 +30,14 @@ function apply(r: Remote) {
   try {
     replaceJobs(Array.isArray(r.tracker) ? r.tracker : []);
     if (r.cv) setCvText(r.cv);
-    setProgress({ roadmaps: {}, phrasesSeen: [], phrasesLearned: [], ...(r.progress ?? {}) });
+    setProgress({ ...{ roadmaps: {}, phrasesSeen: [], phrasesLearned: [] } as Progress, ...(r.progress ?? {}) });
   } finally { applying = false; }
 }
 function merge(r: Remote | null): Omit<Remote, "share_insights" | "updated_at"> {
   const local = getJobs(), lp = getProgress();
   if (!r) return { tracker: local, cv: getCvText(), progress: lp };
   const ids = new Set(local.map((j) => j.id));
-  const rp: Progress = { roadmaps: {}, phrasesSeen: [], phrasesLearned: [], ...(r.progress ?? {}) };
+  const rp: Progress = { ...{ roadmaps: {}, phrasesSeen: [], phrasesLearned: [] } as Progress, ...(r.progress ?? {}) };
   const uniq = (a: string[]) => [...new Map(a.map((x) => [x.toLowerCase(), x])).values()];
   return {
     tracker: [...local, ...(r.tracker ?? []).filter((j) => !ids.has(j.id))],

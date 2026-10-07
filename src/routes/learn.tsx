@@ -9,7 +9,7 @@ import { useProgress, markPhraseLearned, isLearned } from "@/lib/progress";
 const T = "Swedish micro-lessons — Meriterande";
 const D = "Short lessons on Swedish job-ad phrases: meaning, pronunciation, an example sentence and a quick quiz.";
 export const Route = createFileRoute("/learn")({
-  validateSearch: (s: Record<string, unknown>) => ({ phrase: typeof s.phrase === "string" && s.phrase ? s.phrase.slice(0, 80) : undefined }),
+  validateSearch: (s: Record<string, unknown>) => ({ phrase: typeof s["phrase"] === "string" && s["phrase"] ? s["phrase"].slice(0, 80) : undefined }),
   head: () => ({ meta: [{ title: T }, { name: "description", content: D }, { property: "og:title", content: T }, { property: "og:description", content: D }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
   component: Learn,
 });
