@@ -34,6 +34,7 @@ const LOADING = [
 
 function Index() {
   const [ad, setAd] = useState("");
+  // AdLinkFetch fills the job ad text area from a URL
   const [cv, setCv] = useCvText();
   const [loading, setLoading] = useState(false);
   const [msgIdx, setMsgIdx] = useState(0);
@@ -95,6 +96,7 @@ function Index() {
         </p>
 
         <section className="mt-12 space-y-5 rounded-3xl border border-border bg-card p-5 shadow-soft sm:p-7">
+          <AdLinkFetch onText={(t) => { setAd(t); setError(null); }} />
           <Field label="Paste the job ad (Swedish or English)" required value={ad} onChange={setAd} rows={9}
             placeholder="Vi söker en Data Engineer till vårt team i Stockholm..." />
           <div>
