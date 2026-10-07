@@ -405,5 +405,6 @@ function toSummary(r: DecodeResult) {
   const l = (a: string[]) => (a.length ? a.map((x) => `• ${x}`).join("\n") : "• Not specified");
   let s = `ROLE\n${r.role_summary}\n\nMUST-HAVES\n${l(r.must_haves)}\n\nMERITERANDE (NICE-TO-HAVE)\n${l(r.nice_to_haves)}\n\nSWEDISH: ${r.swedish.verdict}\n${r.swedish.reason}\n\nHIDDEN SIGNALS\n${r.hidden_signals.map((h) => `• ${h.phrase}: ${h.explanation}`).join("\n") || "• None"}`;
   if (r.fit) s += `\n\nFIT SCORE: ${r.fit.score}/100\nStrengths:\n${l(r.fit.strengths)}\nGaps:\n${l(r.fit.gaps)}\nAngle: ${r.fit.angle}`;
+  if (r.roast) s += `\n\nROAST 🔥\n${r.roast}`;
   return s + "\n\n— Decoded with Meriterande";
 }
