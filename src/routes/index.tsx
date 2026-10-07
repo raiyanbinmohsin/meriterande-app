@@ -3,6 +3,8 @@ import { useEffect, useState } from "react";
 import { decodeAd, type DecodeResult } from "@/lib/decode.functions";
 import { SAMPLE_AD } from "@/lib/sample-ad";
 import { CloseTheGap } from "@/components/CloseTheGap";
+import { CvUpload } from "@/components/CvUpload";
+import { useCvText } from "@/lib/cv-store";
 
 const TITLE = "Meriterande — Decode any Swedish job ad in 5 seconds";
 const DESC = "Know what's required, what's 'meriterande', and whether you actually need Swedish. A job-ad decoder for international job seekers in Sweden.";
@@ -32,7 +34,7 @@ const LOADING = [
 
 function Index() {
   const [ad, setAd] = useState("");
-  const [cv, setCv] = useState("");
+  const [cv, setCv] = useCvText();
   const [loading, setLoading] = useState(false);
   const [msgIdx, setMsgIdx] = useState(0);
   const [error, setError] = useState<string | null>(null);
@@ -95,8 +97,11 @@ function Index() {
         <section className="mt-12 space-y-5 rounded-3xl border border-border bg-card p-5 shadow-soft sm:p-7">
           <Field label="Paste the job ad (Swedish or English)" required value={ad} onChange={setAd} rows={9}
             placeholder="Vi söker en Data Engineer till vårt team i Stockholm..." />
-          <Field label="Paste your CV (optional, for a fit score)" value={cv} onChange={setCv} rows={5}
-            placeholder="Your experience, skills, education..." />
+          <div>
+            <CvUpload onText={setCv} />
+            <Field label="Paste your CV (optional, for a fit score)" value={cv} onChange={setCv} rows={5}
+              placeholder="Your experience, skills, education..." />
+          </div>
           <div className="flex flex-col gap-3 sm:flex-row">
             <button onClick={onDecode} disabled={loading}
               className="inline-flex h-12 items-center justify-center rounded-full bg-primary px-8 font-semibold text-primary-foreground transition hover:opacity-90 disabled:opacity-60">
