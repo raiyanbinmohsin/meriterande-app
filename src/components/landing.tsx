@@ -43,7 +43,7 @@ const on = "bg-primary text-primary-foreground shadow-soft";
 const off = "text-muted-foreground hover:text-foreground";
 
 function Tabs({ mobile }: { mobile?: boolean }) {
-  const f = mobile ? " flex-1 text-center px-2" : "";
+  const f = mobile ? " flex-1 whitespace-nowrap text-center px-3" : "";
   return (
     <>
       <Link to="/" className={pill + f} activeOptions={{ exact: true }} activeProps={{ className: on }} inactiveProps={{ className: off }}>
@@ -207,7 +207,7 @@ export function CareerCentres() {
         <div className="mt-10 grid gap-4 text-start sm:grid-cols-3">
           {BENEFITS.map((b, i) => (
             <motion.div key={b.title} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.5, delay: 0.1 + i * 0.1 }}
-              className="glass lift rounded-3xl p-6">
+              className="lift rounded-3xl border border-glass-border bg-card p-6 shadow-soft">
               <span className="grid h-11 w-11 place-items-center rounded-2xl bg-sun/20 text-sun"><b.icon className="h-5 w-5" /></span>
               <h3 className="mt-4 text-2xl text-foreground">{b.title}</h3>
               <p className="mt-1.5 text-sm text-muted-foreground">{b.text}</p>

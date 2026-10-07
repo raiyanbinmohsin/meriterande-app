@@ -112,7 +112,7 @@ function Stat({ label, value, sub }: { label: string; value: string; sub?: strin
 function JobCard({ job }: { job: Job }) {
   const [open, setOpen] = useState(false);
   const left = job.deadline ? daysUntil(job.deadline) : null;
-  const overdue = left != null && left < 0 && job.column === "Saved";
+  const overdue = left != null && left < 0 && job.column !== "Offer" && job.column !== "Rejected";
   return (
     <article draggable onDragStart={(e) => e.dataTransfer.setData("text/plain", job.id)}
       className={`cursor-grab rounded-2xl border bg-card p-4 shadow-soft transition hover:-translate-y-0.5 hover:shadow-lift active:cursor-grabbing ${overdue ? "border-destructive bg-destructive/10" : "border-border"}`}>
