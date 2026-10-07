@@ -1,4 +1,5 @@
 import { createServerFn } from "@tanstack/react-start";
+import { styleRules } from "./decode.functions";
 
 export type Milestone = {
   horizon: "7 days" | "14 days" | "1 month" | "2 months" | "6 months";
@@ -62,7 +63,7 @@ RULES:
 - Do not invent facts about the candidate or the ad.`;
 
 export const buildPlan = createServerFn({ method: "POST" })
-  .inputValidator((d: { ad: string; cv: string; score: number; gaps: string[]; hours: number; styles: string[]; target: string }) => {
+  .inputValidator((d: { ad: string; cv: string; score: number; gaps: string[]; hours: number; styles: string[]; target: string; lang?: string; roast?: boolean }) => {
     const ad = String(d?.ad ?? "").trim(), cv = String(d?.cv ?? "").trim();
     if (!ad || !cv) throw new Error("A job ad and CV are required.");
     if (ad.length > 20000 || cv.length > 20000) throw new Error("Text is too long.");
@@ -70,7 +71,7 @@ export const buildPlan = createServerFn({ method: "POST" })
     const styles = (Array.isArray(d.styles) ? d.styles : []).map(String).slice(0, 4);
     const target = String(d.target ?? "1 month").slice(0, 20);
     const gaps = (Array.isArray(d.gaps) ? d.gaps : []).map(String).slice(0, 10);
-    return { ad, cv, score: Math.max(0, Math.min(100, Number(d.score) || 0)), gaps, hours, styles, target };
+    return { lang: String(d.lang ?? "English"), roast: !!d.roast, ad, cv, score: Math.max(0, Math.min(100, Number(d.score) || 0)), gaps, hours, styles, target };
   })
   .handler(async ({ data }): Promise<{ ok: true; result: PlanResult } | { ok: false; error: string }> => {
     const key = process.env["LOVABLE_API_KEY"];
@@ -81,7 +82,7 @@ export const buildPlan = createServerFn({ method: "POST" })
       headers: { "Content-Type": "application/json", "Lovable-API-Key": key, "X-Lovable-AIG-SDK": "fetch" },
       body: JSON.stringify({
         model: "openai/gpt-6-astra",
-        instructions: SYSTEM,
+        instructions: SYSTEM + styleRules(data.lang, data.roast),
         input,
         stream: true,
         store: false,
