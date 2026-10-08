@@ -99,6 +99,7 @@ function MobileMenu() {
                 {m.label}
               </Link>
             ))}
+            <BookmarkletButton variant="menu" onOpen={() => setOpen(false)} />
           </nav>
         </>
       )}
