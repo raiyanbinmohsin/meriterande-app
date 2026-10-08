@@ -6,7 +6,7 @@ export type DecodeResult = {
   role_summary: string;
   must_haves: string[];
   nice_to_haves: string[];
-  swedish: { verdict: "Required" | "Helpful" | "Not needed" | "Not specified"; reason: string };
+  swedish: { verdict: "Required" | "Very likely required" | "Helpful" | "Not needed" | "Not specified"; reason: string };
   hidden_signals: { phrase: string; explanation: string }[];
   fit: null | { score: number; strengths: string[]; gaps: string[]; angle: string; must_haves_met: number; time_to_close: string };
   roast: string;
@@ -51,7 +51,7 @@ const schema = {
       additionalProperties: false,
       required: ["verdict", "reason"],
       properties: {
-        verdict: { type: "string", enum: ["Required", "Helpful", "Not needed", "Not specified"] },
+        verdict: { type: "string", enum: ["Required", "Very likely required", "Helpful", "Not needed", "Not specified"] },
         reason: { type: "string" },
       },
     },
@@ -94,7 +94,7 @@ STRICT RULES:
 - role_summary: 2-3 plain-English sentences.
 - must_haves: explicit requirements ("krav", "du har", "vi söker dig som", "required"). Translate to English.
 - nice_to_haves: things marked "meriterande", "plus", "fördel", "nice to have". Translate to English.
-- swedish.verdict: "Required" if Swedish is demanded, "Helpful" if meriterande/preferred, "Not needed" only if the ad clearly says English is enough or the ad is clearly English-only with no Swedish mention, otherwise "Not specified". swedish.reason: one line quoting the exact relevant phrase from the ad in quotes.
+- swedish.verdict: "Required" if Swedish is demanded. If the ad itself is written mainly in Swedish, treat that as strong evidence that Swedish is expected, even when not stated explicitly: never return "Not needed" for a Swedish-language ad — return "Required" if the ad states it, otherwise "Very likely required" with the reason "The ad is written in Swedish, which usually means Swedish is expected at work." Only return "Helpful" or "Not needed" if the ad explicitly says English is the working language or Swedish isn't required, and quote that line. "Helpful" if meriterande/preferred. Otherwise "Not specified". swedish.reason: one line quoting the exact relevant phrase from the ad in quotes (except the Swedish-language-ad reason above, which is used as written).
 - hidden_signals: Swedish workplace phrases actually present in the ad (e.g. meriterande, B-körkort, tillsvidareanställning, provanställning, kollektivavtal, friskvårdsbidrag, löpande urval, heltid, tjänstepension, registerutdrag) with a short explanation of what it means in practice. Only include phrases found in the ad.
 - fit: null if no CV is provided. Otherwise score 0-100 based only on CV vs ad, exactly 3 strengths, 3 gaps, and one sentence on how to angle the application. Do not assume skills not in the CV. must_haves_met: how many of the must_haves the CV clearly meets. time_to_close: short realistic estimate to close the key closable gaps (e.g. "~3 weeks", "6+ months", "already a fit").
 - roast: "" unless ROAST MODE is on; then one or two punchy, kind sentences roasting the gap between CV and ad (or the ad itself if no CV).`;
