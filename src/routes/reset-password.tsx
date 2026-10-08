@@ -55,8 +55,7 @@ function Reset() {
         }
         // The client may already have consumed the link (detectSessionInUrl) — give the event a moment.
         await new Promise((r) => setTimeout(r, 1500));
-        const { data } = await supabase.auth.getSession();
-        return data.session && hash.get("type") === "recovery" ? ok() : data.session && done ? undefined : bad();
+        return bad();
       } catch { bad(); }
     })();
     return () => sub.subscription.unsubscribe();
