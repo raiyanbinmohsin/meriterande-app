@@ -11,10 +11,10 @@ how well you actually fit and what to do about the gaps.
 
 Live: **https://meriterande-app.lovable.app**
 
-<!-- Replace this placeholder with a real screenshot: public/og-image.jpg is the
-     current social preview (1200x630). Save the app screenshot at
-     docs/screenshot.png and update the path below. -->
-![Meriterande — decoder showing a fit-score gauge, must-haves, Swedish-language verdict and hidden signals](docs/screenshot.png)
+<!-- Screenshot placeholder: this is the current social preview graphic.
+     Replace with a real capture of the decoder results once docs/screenshot.png
+     exists, and update the path below. -->
+![Meriterande — decode any Swedish job ad in 5 seconds](public/og-image.jpg)
 
 ---
 
