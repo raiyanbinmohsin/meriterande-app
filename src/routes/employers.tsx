@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { OG_IMAGE } from "@/lib/seo";
 import { useState } from "react";
 import { motion } from "motion/react";
 import { Copy, Building2 } from "lucide-react";
@@ -9,7 +10,7 @@ import { SAMPLE_AD } from "@/lib/sample-ad";
 const T = "For employers: is your job ad scaring off international talent? — Meriterande";
 const D = "Paste your job ad and get a clarity score, unclear or exclusionary phrases with rewrites, a language-requirement check and a clearer version.";
 export const Route = createFileRoute("/employers")({
-  head: () => ({ meta: [{ title: T }, { name: "description", content: D }, { property: "og:title", content: T }, { property: "og:description", content: D }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
+  head: () => ({ meta: [{ title: T }, { name: "description", content: D }, { property: "og:title", content: T }, { property: "og:description", content: D }, { property: "og:type", content: "website" }, { property: "og:image", content: OG_IMAGE }, { name: "twitter:image", content: OG_IMAGE }, { name: "twitter:card", content: "summary_large_image" }] }),
   component: Employers,
 });
 

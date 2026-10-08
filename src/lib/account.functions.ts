@@ -14,7 +14,7 @@ export const deleteMyAccount = createServerFn({ method: "POST" })
       const { error } = await supabaseAdmin.auth.admin.deleteUser(userId);
       if (error) { console.error("deleteUser", error); return { ok: false, error: FAIL }; }
       // Explicit cleanup (should already be empty via cascade); report honestly if anything remains.
-      const tables = ["user_roles", "user_data", "insight_events"] as const;
+      const tables = ["user_roles", "user_data", "insight_events", "stories", "feedback"] as const;
       const left: string[] = [];
       for (const t of tables) {
         const del = await supabaseAdmin.from(t).delete().eq("user_id", userId);

@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { OG_IMAGE } from "@/lib/seo";
 import { useEffect, useState } from "react";
 import { motion } from "motion/react";
 import { Lock, Share2, Users } from "lucide-react";
@@ -11,7 +12,7 @@ import { useSync, setShareInsights } from "@/lib/sync";
 const T = "Career-centre insights — Meriterande";
 const D = "Aggregated, anonymous skill-gap data from opted-in Meriterande users: common gaps, most-decoded roles and average fit scores.";
 export const Route = createFileRoute("/insights")({
-  head: () => ({ meta: [{ title: T }, { name: "description", content: D }, { property: "og:title", content: T }, { property: "og:description", content: D }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
+  head: () => ({ meta: [{ title: T }, { name: "description", content: D }, { property: "og:title", content: T }, { property: "og:description", content: D }, { property: "og:type", content: "website" }, { property: "og:image", content: OG_IMAGE }, { name: "twitter:image", content: OG_IMAGE }, { name: "twitter:card", content: "summary_large_image" }] }),
   component: Insights,
 });
 

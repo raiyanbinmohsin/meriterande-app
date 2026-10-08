@@ -9,11 +9,14 @@ const obj = (properties: Record<string, unknown>) => ({ type: "object", addition
 export type CoverLetter = { subject: string; letter: string };
 export const writeCoverLetter = createServerFn({ method: "POST" })
   .inputValidator((d: { ad: string; cv: string; tone: string; length: string; language: string }) => {
-    const ad = clip(d?.ad), cv = clip(d?.cv);
+    const ad = String(d?.ad ?? "").trim(), cv = String(d?.cv ?? "").trim();
+    if (ad.length > 15000) throw new Error("The job ad is too long (max 15,000 characters).");
+    if (cv.length > 20000) throw new Error("The CV is too long (max 20,000 characters).");
     if (ad.length < 30 || cv.length < 30) throw new Error("Add both the job ad and your CV.");
     return { ad, cv, tone: d?.tone === "warm" ? "warm" : "formal", length: d?.length === "short" ? "short" : "standard", language: clip(d?.language, 40) || "English" };
   })
   .handler(async ({ data }) => {
+    { const rl = await (await import("./rate-limit.server")).rateLimit("cover"); if (rl) return rl; }
     const { aiJson, FACTS_ONLY } = await import("./ai.server");
     const words = data.length === "short" ? "150-200 words" : "280-380 words";
     return aiJson<CoverLetter>(
@@ -32,6 +35,7 @@ export const interviewQuestions = createServerFn({ method: "POST" })
     return { context, cv: clip(d?.cv) };
   })
   .handler(async ({ data }) => {
+    { const rl = await (await import("./rate-limit.server")).rateLimit("interview"); if (rl) return rl; }
     const { aiJson } = await import("./ai.server");
     return aiJson<{ questions: string[] }>(
       "You are an interviewer. Write exactly 5 realistic interview questions for this role, mixing motivation, technical and behavioural questions. Base them only on the role text and, if given, the CV. Write in English.",
@@ -45,6 +49,7 @@ export const gradeAnswer = createServerFn({ method: "POST" })
     return { question: clip(d?.question, 600), answer, cv: clip(d?.cv), context: clip(d?.context, 6000) };
   })
   .handler(async ({ data }) => {
+    { const rl = await (await import("./rate-limit.server")).rateLimit("interview"); if (rl) return rl; }
     const { aiJson, FACTS_ONLY } = await import("./ai.server");
     const r = await aiJson<Grade>(
       `You are a kind, honest interview coach. Grade the candidate's answer. ${FACTS_ONLY}
@@ -58,6 +63,7 @@ score: integer 0-10. strong: one or two sentences on what worked. improve: one o
 export const interviewSummary = createServerFn({ method: "POST" })
   .inputValidator((d: { items: { question: string; score: number; improve: string }[] }) => ({ items: (d?.items ?? []).slice(0, 6).map((i) => ({ question: clip(i.question, 500), score: Number(i.score) || 0, improve: clip(i.improve, 600) })) }))
   .handler(async ({ data }) => {
+    { const rl = await (await import("./rate-limit.server")).rateLimit("interview"); if (rl) return rl; }
     const { aiJson } = await import("./ai.server");
     return aiJson<{ improvements: string[]; verdict: string }>(
       "Summarise a mock interview. improvements: exactly the 3 most important, concrete improvements across all answers. verdict: one encouraging, honest sentence.",
@@ -73,6 +79,7 @@ export const microLesson = createServerFn({ method: "POST" })
     return { phrase };
   })
   .handler(async ({ data }) => {
+    { const rl = await (await import("./rate-limit.server")).rateLimit("lesson"); if (rl) return rl; }
     const { aiJson } = await import("./ai.server");
     const r = await aiJson<Lesson>(
       `You teach Swedish job-ad and workplace vocabulary to international job seekers. Make a short lesson in English for the given Swedish phrase.
@@ -93,11 +100,13 @@ export type AdReview = {
 };
 export const reviewEmployerAd = createServerFn({ method: "POST" })
   .inputValidator((d: { ad: string }) => {
-    const ad = clip(d?.ad);
+    const ad = String(d?.ad ?? "").trim();
+    if (ad.length > 15000) throw new Error("The job ad is too long (max 15,000 characters).");
     if (ad.length < 80) throw new Error("Please paste the full job ad.");
     return { ad };
   })
   .handler(async ({ data }) => {
+    { const rl = await (await import("./rate-limit.server")).rateLimit("employer"); if (rl) return rl; }
     const { aiJson } = await import("./ai.server");
     const r = await aiJson<AdReview>(
       `You help employers make job ads clear and inclusive for international talent. Review the ad. Reply in English, but quote phrases exactly as written in the ad.

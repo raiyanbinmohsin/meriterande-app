@@ -1,3 +1,4 @@
+import { track } from "@/lib/analytics.functions";
 import { useEffect, useState } from "react";
 import { getProgress, saveRoadmap } from "@/lib/progress";
 import { buildPlan, type PlanResult } from "@/lib/plan.functions";
@@ -32,7 +33,7 @@ export function CloseTheGap({ ad, cv, score, gaps, lang = "English", roast = fal
     setLoading(true); setError(null); setPlan(null); setDone({}); setLearned({});
     try {
       const r = await withDeadline(buildPlan({ data: { ad, cv, score, gaps, hours, styles, target, lang, roast, country } }));
-      if (r.ok) setPlan(r.result); else setError(r.error);
+      if (r.ok) { setPlan(r.result); track("roadmap_generated"); } else setError(r.error);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Something went wrong. Please try again.");
     } finally { setLoading(false); }

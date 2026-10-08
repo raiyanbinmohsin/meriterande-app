@@ -121,6 +121,7 @@ export const generatePitch = createServerFn({ method: "POST" })
     return x;
   })
   .handler(async ({ data }): Promise<Res<Pitch>> => {
+    { const rl = await (await import("./rate-limit.server")).rateLimit("thesis"); if (rl) return rl; }
     const r = await callAI<Pitch>(RULES + styleRules(data.lang, data.roast, data.country) + emailLangRule(data.emailLang, data.country) +
       `\nReturn exactly 3 ideas. best_index: the strongest idea (0-based). The email, notes, post and interview questions are about that idea.`,
       brief(data), "pitch", pitchSchema);
@@ -141,6 +142,7 @@ export const pitchForIdea = createServerFn({ method: "POST" })
     return { ...x, idea: { title: String(i.title).slice(0, 200), problem: String(i.problem).slice(0, 600), approach: String(i.approach).slice(0, 800), value: String(i.value).slice(0, 600) } };
   })
   .handler(async ({ data }): Promise<Res<Outreach>> => {
+    { const rl = await (await import("./rate-limit.server")).rateLimit("thesis"); if (rl) return rl; }
     const r = await callAI<Outreach>(RULES + styleRules(data.lang, data.roast, data.country) + emailLangRule(data.emailLang, data.country),
       brief(data) + `\n\nCHOSEN IDEA:\n${JSON.stringify(data.idea, null, 1)}`, "outreach", outreachSchema);
     if (r.ok) r.result.interview = r.result.interview.slice(0, 5);
@@ -150,6 +152,7 @@ export const pitchForIdea = createServerFn({ method: "POST" })
 export const extractSkills = createServerFn({ method: "POST" })
   .inputValidator((d: { cv: string }) => ({ cv: String(d?.cv ?? "").slice(0, 20000) }))
   .handler(async ({ data }): Promise<Res<{ skills: string[] }>> => {
+    { const rl = await (await import("./rate-limit.server")).rateLimit("thesis"); if (rl) return rl; }
     if (data.cv.trim().length < 30) return { ok: true, result: { skills: [] } };
     const r = await callAI<{ skills: string[] }>(
       "Extract 5-15 concrete technical and professional skills, tools, methods and languages explicitly present in this CV. Short names only (e.g. \"PySpark\", \"SQL\", \"Swedish (B1)\"). Never add skills not in the text.",

@@ -7,6 +7,19 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { acceptMerge, declineMerge, enableSyncWithoutMerge, useSync } from "@/lib/sync";
 import { deleteMyAccount } from "@/lib/account.functions";
+import { replaceJobs } from "@/lib/tracker";
+import { setCvText } from "@/lib/cv-store";
+import { setProgress } from "@/lib/progress";
+
+/** Removes everything Meriterande saved in this browser (tracker, CV, progress, recent ads, interview hand-off). */
+export function clearDeviceData() {
+  try {
+    for (const store of [localStorage, sessionStorage]) {
+      Object.keys(store).filter((k) => k.startsWith("meriterande.")).forEach((k) => store.removeItem(k));
+    }
+  } catch {}
+  replaceJobs([]); setCvText(""); setProgress({ roadmaps: {}, phrasesSeen: [], phrasesLearned: [] });
+}
 
 export function AccountMenu() {
   const { user, ready, isAdmin } = useAuth();
@@ -56,6 +69,7 @@ export function DeleteDialog({ onClose }: { onClose: () => void }) {
   const del = useServerFn(deleteMyAccount);
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
+  const [wipe, setWipe] = useState(true);
   const navigate = useNavigate();
   async function go() {
     setBusy(true); setErr(null);
@@ -63,6 +77,7 @@ export function DeleteDialog({ onClose }: { onClose: () => void }) {
       const r = await del();
       if (!r.ok) { setErr(r.error); return; }
       await supabase.auth.signOut();
+      if (wipe) clearDeviceData();
       onClose();
       navigate({ to: "/", replace: true });
     } catch { setErr("Couldn't delete the account. Please try again."); } finally { setBusy(false); }
@@ -71,7 +86,11 @@ export function DeleteDialog({ onClose }: { onClose: () => void }) {
     <div className="fixed inset-0 z-[100] grid place-items-center bg-foreground/40 p-4 backdrop-blur-sm" role="dialog" aria-modal="true">
       <div className="w-full max-w-md rounded-3xl bg-card p-6 text-card-foreground shadow-lift">
         <h2 className="text-3xl">Delete your account?</h2>
-        <p className="mt-2 text-muted-foreground">This permanently deletes your account and everything synced to it: tracker, CV, roadmap progress and any anonymous insight data. Data saved on this device stays here.</p>
+        <p className="mt-2 text-muted-foreground">This permanently deletes your account and everything synced to it: tracker, CV, roadmap progress, anonymous insight data, stories and feedback you sent while signed in.</p>
+        <label className="mt-4 flex min-h-11 items-center gap-3 text-sm font-semibold">
+          <input type="checkbox" className="h-5 w-5 accent-primary" checked={wipe} onChange={(e) => setWipe(e.target.checked)} />
+          Also clear the data saved in this browser
+        </label>
         {err && <p className="mt-3 text-sm text-destructive">{err}</p>}
         <div className="mt-6 flex flex-col gap-2 sm:flex-row-reverse">
           <button onClick={go} disabled={busy} className="h-12 rounded-full bg-destructive px-6 font-semibold text-destructive-foreground disabled:opacity-60">{busy ? "Deleting..." : "Delete everything"}</button>
@@ -90,7 +109,7 @@ export function SyncPrompt() {
       <div className="w-full max-w-md rounded-3xl bg-card p-6 text-card-foreground shadow-lift">
         <span className="grid h-12 w-12 place-items-center rounded-2xl bg-primary/12 text-primary"><Cloud className="h-6 w-6" /></span>
         <h2 className="mt-4 text-3xl">Move your data to your account?</h2>
-        <p className="mt-2 text-muted-foreground">We found a tracker, CV or roadmap progress saved on this device. Move it into your account to sync it across your devices.</p>
+        <p className="mt-2 text-muted-foreground">We found a tracker, CV or roadmap progress saved on this device. Move it into your account to sync it across your devices. Your CV stays on this device unless you turn on "Save my CV to my account" in My data.</p>
         <div className="mt-6 flex flex-col gap-2">
           <button disabled={busy} onClick={async () => { setBusy(true); await acceptMerge(); setBusy(false); }} className="h-12 rounded-full bg-primary px-6 font-semibold text-primary-foreground disabled:opacity-60">{busy ? "Moving..." : "Move and sync"}</button>
           <button onClick={enableSyncWithoutMerge} className="glass h-12 rounded-full px-6 font-semibold">Use my account's data instead</button>

@@ -282,6 +282,7 @@ export function SiteFooter() {
       <div className="mb-3 flex justify-center opacity-80"><Wordmark /></div>
       <nav aria-label="Footer" className="mb-3 flex flex-wrap justify-center gap-x-5 gap-y-2">
         <Link to="/employers" className="font-semibold text-foreground hover:text-primary">For employers</Link>
+        <Link to="/privacy" className="font-semibold text-foreground hover:text-primary">Privacy</Link>
         <Link to="/learn" search={{ phrase: undefined }} className="hover:text-foreground">Swedish micro-lessons</Link>
         <Link to="/interview" className="hover:text-foreground">Mock interview</Link>
         <Link to="/insights" className="hover:text-foreground">Career-centre insights</Link>

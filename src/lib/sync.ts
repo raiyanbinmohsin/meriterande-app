@@ -6,9 +6,9 @@ import { getJobs, replaceJobs, subscribeJobs, type Job } from "./tracker";
 import { getCvText, setCvText, subscribeCv } from "./cv-store";
 import { getProgress, setProgress, subscribeProgress, type Progress } from "./progress";
 
-type Remote = { tracker: Job[]; cv: string; progress: Progress; share_insights: boolean; updated_at: string };
-type SyncState = { prompt: boolean; enabled: boolean; shareInsights: boolean; lastSync: string | null; error: string | null };
-let st: SyncState = { prompt: false, enabled: false, shareInsights: false, lastSync: null, error: null };
+type Remote = { tracker: Job[]; cv: string; progress: Progress; share_insights: boolean; save_cv: boolean; updated_at: string };
+type SyncState = { prompt: boolean; enabled: boolean; shareInsights: boolean; saveCv: boolean; lastSync: string | null; error: string | null };
+let st: SyncState = { prompt: false, enabled: false, shareInsights: false, saveCv: false, lastSync: null, error: null };
 const SERVER = st;
 const subs = new Set<() => void>();
 const set = (p: Partial<SyncState>) => { st = { ...st, ...p }; subs.forEach((f) => f()); };
@@ -33,7 +33,7 @@ function apply(r: Remote) {
     setProgress({ ...{ roadmaps: {}, phrasesSeen: [], phrasesLearned: [] } as Progress, ...(r.progress ?? {}) });
   } finally { applying = false; }
 }
-function merge(r: Remote | null): Omit<Remote, "share_insights" | "updated_at"> {
+function merge(r: Remote | null): Omit<Remote, "share_insights" | "save_cv" | "updated_at"> {
   const local = getJobs(), lp = getProgress();
   if (!r) return { tracker: local, cv: getCvText(), progress: lp };
   const ids = new Set(local.map((j) => j.id));
@@ -47,12 +47,12 @@ function merge(r: Remote | null): Omit<Remote, "share_insights" | "updated_at"> 
 }
 async function fetchRemote(): Promise<Remote | null> {
   if (!user) return null;
-  const { data } = await supabase.from("user_data").select("tracker, cv, progress, share_insights, updated_at").eq("user_id", user.id).maybeSingle();
+  const { data } = await supabase.from("user_data").select("tracker, cv, progress, share_insights, save_cv, updated_at").eq("user_id", user.id).maybeSingle();
   return (data as unknown as Remote) ?? null;
 }
 async function push() {
   if (!user || !st.enabled) return;
-  const row = { user_id: user.id, tracker: getJobs() as never, cv: getCvText(), progress: getProgress() as never, updated_at: new Date().toISOString() };
+  const row = { user_id: user.id, tracker: getJobs() as never, cv: st.saveCv ? getCvText().slice(0, 20000) : "", progress: getProgress() as never, updated_at: new Date().toISOString() };
   const { error } = await supabase.from("user_data").upsert(row, { onConflict: "user_id" });
   if (error) set({ error: "Couldn't sync right now — your data is still saved on this device." });
   else set({ lastSync: row.updated_at, error: null });
@@ -62,7 +62,7 @@ function schedule() { if (applying || !st.enabled) return; clearTimeout(timer); 
 async function onSignedIn(u: User) {
   user = u;
   remote = await fetchRemote();
-  set({ shareInsights: !!remote?.share_insights });
+  set({ shareInsights: !!remote?.share_insights, saveCv: !!remote?.save_cv });
   let merged = false;
   try { merged = localStorage.getItem(mergedKey(u.id)) === "1"; } catch {}
   if (localHasData() && !merged) { set({ prompt: true }); return; }
@@ -88,6 +88,14 @@ export function enableSyncWithoutMerge() {
   set({ prompt: false, enabled: true });
 }
 
+/** CV text is stored on the server only when the signed-in user turns this on; off removes it. */
+export async function setSaveCv(v: boolean) {
+  if (!user) return;
+  const { error } = await supabase.from("user_data").upsert({ user_id: user.id, save_cv: v, cv: v ? getCvText().slice(0, 20000) : "" }, { onConflict: "user_id" });
+  if (!error) set({ saveCv: v });
+  return error ? "Couldn't update this setting." : null;
+}
+
 export async function setShareInsights(v: boolean) {
   if (!user) return;
   const { error } = await supabase.from("user_data").upsert({ user_id: user.id, share_insights: v }, { onConflict: "user_id" });
@@ -110,7 +118,7 @@ export function startSync() {
   startAuth();
   onUserChange((_e, u) => {
     if (u) void onSignedIn(u);
-    else { user = null; remote = null; set({ enabled: false, prompt: false, shareInsights: false, lastSync: null }); }
+    else { user = null; remote = null; set({ enabled: false, prompt: false, shareInsights: false, saveCv: false, lastSync: null }); }
   });
   subscribeJobs(schedule); subscribeCv(schedule); subscribeProgress(schedule);
   window.addEventListener("focus", async () => {

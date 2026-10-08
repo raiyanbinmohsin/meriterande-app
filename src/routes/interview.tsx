@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { OG_IMAGE } from "@/lib/seo";
 import { useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { Mic, MicOff, Send, RotateCcw } from "lucide-react";
@@ -10,7 +11,7 @@ import { useCvText } from "@/lib/cv-store";
 const T = "Mock interview — Meriterande";
 const D = "Practise five interview questions one at a time, by typing or speaking, and get a score and a stronger answer based only on your CV.";
 export const Route = createFileRoute("/interview")({
-  head: () => ({ meta: [{ title: T }, { name: "description", content: D }, { property: "og:title", content: T }, { property: "og:description", content: D }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
+  head: () => ({ meta: [{ title: T }, { name: "description", content: D }, { property: "og:title", content: T }, { property: "og:description", content: D }, { property: "og:type", content: "website" }, { property: "og:image", content: OG_IMAGE }, { name: "twitter:image", content: OG_IMAGE }, { name: "twitter:card", content: "summary_large_image" }] }),
   component: Interview,
 });
 

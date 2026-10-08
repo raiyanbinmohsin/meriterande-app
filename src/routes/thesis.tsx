@@ -1,4 +1,5 @@
 import { ThesisIllustration } from "@/components/illustrations";
+import { OG_IMAGE } from "@/lib/seo";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
@@ -14,6 +15,7 @@ import { generatePitch, pitchForIdea, extractSkills, type Pitch, type Idea, type
 import { addJob } from "@/lib/tracker";
 import { setInterviewSetup } from "@/lib/interview-store";
 import { downloadThesisCard } from "@/components/thesis-share";
+import { track } from "@/lib/analytics.functions";
 
 const TITLE = "Pitch a thesis — Meriterande";
 const DESC = "Don't wait for a thesis ad. Generate tailored thesis ideas, a cold email and a LinkedIn note to pitch your own thesis to a company.";
@@ -25,7 +27,7 @@ export const Route = createFileRoute("/thesis")({
       { name: "description", content: DESC },
       { property: "og:title", content: TITLE },
       { property: "og:description", content: DESC },
-      { property: "og:type", content: "website" },
+      { property: "og:type", content: "website" }, { property: "og:image", content: OG_IMAGE }, { name: "twitter:image", content: OG_IMAGE },
       { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
@@ -116,6 +118,7 @@ function ThesisPage() {
     try {
       const r = await withDeadline(generatePitch({ data: base() }));
       if (r.ok) {
+        track("thesis_pitch_generated");
         setUsed({ lang, country, roast });
         setPitch(r.result); setSel(r.result.best_index); setOut(r.result);
         setTimeout(() => document.getElementById("pitch")?.scrollIntoView({ behavior: "smooth" }), 50);
@@ -359,7 +362,7 @@ function ThesisPage() {
                 <p className="mt-2 text-primary-foreground/75 dark:text-muted-foreground">Readiness {idea.readiness}/100</p>
                 <p className="mt-4 rounded-2xl bg-card/90 p-4 text-sm text-foreground">{out.linkedin_post}</p>
                 <div className="mt-4 flex flex-wrap gap-2">
-                  <button onClick={() => downloadThesisCard(company, idea.title, idea.readiness, rtl)}
+                  <button onClick={() => { track("share_card_downloaded"); void downloadThesisCard(company, idea.title, idea.readiness, rtl); }}
                     className="inline-flex h-11 items-center rounded-full bg-sun px-5 text-sm font-semibold text-navy">Download image</button>
                   <CopyBtn text={out.linkedin_post} label="Copy LinkedIn post" />
                 </div>
