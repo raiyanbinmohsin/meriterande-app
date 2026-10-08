@@ -133,7 +133,35 @@ function RootShell({ children }: { children: ReactNode }) {
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
   const [mounted, setMounted] = useState(false);
-  useEffect(() => { startSync(); setMounted(true); }, []);
+  useEffect(() => {
+    startSync();
+    setMounted(true);
+    // Old tabs after a deploy request code files that no longer exist: reload once (30s guard).
+    const reloadOnce = (msg: string) => {
+      if (!STALE_CHUNK.test(msg)) return false;
+      try {
+        const last = Number(sessionStorage.getItem(RELOAD_KEY) || 0);
+        if (Date.now() - last < 30_000) return false;
+        sessionStorage.setItem(RELOAD_KEY, String(Date.now()));
+      } catch { return false; }
+      window.location.reload();
+      return true;
+    };
+    const onPreload = (e: Event) => {
+      const err = (e as Event & { payload?: unknown }).payload;
+      if (reloadOnce(err instanceof Error ? err.message : String(err ?? "Failed to fetch dynamically imported module"))) e.preventDefault();
+    };
+    const onRejection = (e: PromiseRejectionEvent) => {
+      const r = e.reason;
+      if (reloadOnce(r instanceof Error ? r.message : String(r))) e.preventDefault();
+    };
+    window.addEventListener("vite:preloadError", onPreload);
+    window.addEventListener("unhandledrejection", onRejection);
+    return () => {
+      window.removeEventListener("vite:preloadError", onPreload);
+      window.removeEventListener("unhandledrejection", onRejection);
+    };
+  }, []);
 
   return (
     <QueryClientProvider client={queryClient}>
