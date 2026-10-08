@@ -5,6 +5,7 @@ import { decodeAd, LANGS, COUNTRIES, countryOf, type DecodeResult } from "@/lib/
 import { addJob } from "@/lib/tracker";
 import { takePendingAd } from "@/lib/ad-store";
 import { Link } from "@tanstack/react-router";
+import { setLastSwedishVerdict } from "@/lib/interview-store";
 import { LongProgress, TaskError, withDeadline } from "@/components/LongTask";
 import { recommendAd, type CompareResult } from "@/lib/compare.functions";
 import { CompareTable } from "@/components/CompareTable";
@@ -104,6 +105,7 @@ function Index() {
       if (r.ok) {
         setUsed({ lang, roast, country });
         setResult(r.result);
+        setLastSwedishVerdict(country === "Sweden" ? r.result.swedish.verdict : "");
         setSavedId(null);
         if (country === "Sweden") addSeenPhrases(r.result.hidden_signals.map((h) => h.phrase));
         if (r.result.fit) void recordInsight(r.result.job_title, r.result.fit.score, r.result.fit.gaps);

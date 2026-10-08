@@ -5,3 +5,8 @@ export function setInterviewSetup(s: InterviewSetup) { try { sessionStorage.setI
 export function getInterviewSetup(): InterviewSetup | null {
   try { return JSON.parse(sessionStorage.getItem(KEY) ?? "null") as InterviewSetup | null; } catch { return null; }
 }
+
+// Last decoded ad's Swedish verdict — lets the mock interview default its speech language.
+const SV = "meriterande.lastSwedish";
+export function setLastSwedishVerdict(v: string) { try { sessionStorage.setItem(SV, v); } catch {} }
+export function lastAdRequiresSwedish() { try { return sessionStorage.getItem(SV) === "Required"; } catch { return false; } }
