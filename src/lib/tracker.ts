@@ -1,4 +1,5 @@
 import { useSyncExternalStore } from "react";
+import { track } from "./analytics.functions";
 
 export const COLUMNS = ["Saved", "Applied", "Interview", "Offer", "Rejected"] as const;
 export type Column = (typeof COLUMNS)[number];
@@ -47,8 +48,8 @@ export function subscribeJobs(f: () => void) { subs.add(f); return () => { subs.
 export function addJob(j: Pick<Job, "title" | "company" | "score" | "verdict"> & { kind?: JobKind; adText?: string }) {
   const job: Job = { kind: "job", ...j, id: crypto.randomUUID(), savedOn: today(), column: "Saved", notes: "", deadline: "", appliedOn: "", reachedInterview: false };
   write([job, ...read()]);
-  // Analytics is best-effort: a stale chunk after a deploy must never surface as an error.
-  void import("./analytics.functions").then((m) => m.track("tracker_card_saved")).catch(() => {});
+  // Static import: no separate code file to go missing after a deploy; track() itself never throws.
+  try { track("tracker_card_saved"); } catch { /* analytics is best-effort */ }
   return job;
 }
 
