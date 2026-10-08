@@ -219,6 +219,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      purge_expired_data: { Args: never; Returns: undefined }
     }
     Enums: {
       app_role: "admin" | "user"
