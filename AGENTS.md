@@ -13,3 +13,7 @@
 - Local-first data: tracker, CV and progress live in client stores (localStorage/memory); src/lib/sync.ts mirrors them to the user_data table only for signed-in users who accepted — the app must keep working with no account.
 - Admin rights come only from public.user_roles (assigned by an auth.users trigger), checked via has_role — never from client state.
 - Insights aggregation runs only in the security-definer get_insights() function with participant/k thresholds — raw events are never readable across users.
+- Every table with a user_id references auth.users ON DELETE CASCADE; account deletion deletes the auth user (atomic) then verifies rows are gone — no partial deletes.
+- Story submissions go only through the submitStory server function (honeypot + per-IP-hash/per-user daily limit, DB length checks); anon/authenticated have no INSERT on stories.
+- Admin emails live in public.admin_emails (admin-managed); assign_admin_role reads it. get_insights() is executable only by service_role, called via the loadInsights server function after an opt-in check.
+- Long AI generations (roadmap, compare, thesis) are wrapped client-side with withDeadline + LongProgress/TaskError from src/components/LongTask.tsx — a hard stop with retry instead of an indefinite spinner, since Worker background jobs are not guaranteed to finish.

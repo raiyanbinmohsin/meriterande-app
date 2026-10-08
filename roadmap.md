@@ -1,15 +1,15 @@
 # Roadmap
-- [ ] Password reset session handling + invalid link state
-- [ ] Cascade FKs + honest account deletion
-- [ ] Story submissions via server fn (rate limit, honeypot, length checks)
-- [ ] search_path on security definer fns; admin_emails table; linter
-- [ ] Long AI requests: elapsed time, steps, 90s cutoff + Try again, faster sub-step model
-- [ ] /learn starter deck
-- [ ] Interview speech language toggle
-- [ ] Insights cold-start progress + share
-- [ ] Salary links per country
-- [ ] JSON-LD JobPosting extraction + new fallback text
-- [ ] Compare: pick from tracker / recent decodes; store ad text on tracker cards
-- [ ] Cover letter settings-changed state
-- [ ] Mobile header menu
-- [ ] Bookmarklet touch instructions
+- [x] Password reset session handling + invalid link state
+- [x] Cascade FKs + honest account deletion
+- [x] Story submissions via server fn (rate limit, honeypot, length checks)
+- [x] search_path on security definer fns; admin_emails table; linter
+- [x] Long AI requests: elapsed time, steps, 90s cutoff + Try again, faster sub-step model
+- [x] /learn starter deck
+- [x] Interview speech language toggle
+- [x] Insights cold-start progress + share
+- [x] Salary links per country
+- [x] JSON-LD JobPosting extraction + new fallback text
+- [x] Compare: pick from tracker / recent decodes; store ad text on tracker cards
+- [x] Cover letter settings-changed state
+- [x] Mobile header menu
+- [x] Bookmarklet touch instructions
