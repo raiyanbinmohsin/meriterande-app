@@ -1,0 +1,15 @@
+# Roadmap
+- [ ] Password reset session handling + invalid link state
+- [ ] Cascade FKs + honest account deletion
+- [ ] Story submissions via server fn (rate limit, honeypot, length checks)
+- [ ] search_path on security definer fns; admin_emails table; linter
+- [ ] Long AI requests: elapsed time, steps, 90s cutoff + Try again, faster sub-step model
+- [ ] /learn starter deck
+- [ ] Interview speech language toggle
+- [ ] Insights cold-start progress + share
+- [ ] Salary links per country
+- [ ] JSON-LD JobPosting extraction + new fallback text
+- [ ] Compare: pick from tracker / recent decodes; store ad text on tracker cards
+- [ ] Cover letter settings-changed state
+- [ ] Mobile header menu
+- [ ] Bookmarklet touch instructions
