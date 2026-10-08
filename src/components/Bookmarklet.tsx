@@ -64,7 +64,7 @@ export function BookmarkletButton({ variant = "header", onOpen }: { variant?: "h
                 <div className="mt-6 space-y-5">
                   <div>
                     <p className="font-semibold text-foreground">Easiest on a phone</p>
-                    <p className="mt-1 flex items-start gap-2 text-sm text-muted-foreground"><Share2 className="mt-0.5 h-4 w-4 shrink-0" />On the job ad, tap <strong className="text-foreground">Share → Copy link</strong>, then paste it into the "Or paste a job ad link" field here.</p>
+                    <p className="mt-1 flex items-start gap-2 text-sm text-muted-foreground"><Share2 className="mt-0.5 h-4 w-4 shrink-0" /><span>On the job ad, tap <strong className="text-foreground">Share → Copy link</strong>, then paste it into the "Or paste a job ad link" field here.</span></p>
                   </div>
                   <div>
                     <p className="font-semibold text-foreground">Or create the bookmark yourself</p>
