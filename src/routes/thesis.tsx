@@ -9,6 +9,7 @@ import { AdLinkFetch } from "@/components/AdLinkFetch";
 import { CloseTheGap } from "@/components/CloseTheGap";
 import { useCvText } from "@/lib/cv-store";
 import { LANGS, COUNTRIES, countryOf } from "@/lib/decode.functions";
+import { LongProgress, TaskError, withDeadline } from "@/components/LongTask";
 import { generatePitch, pitchForIdea, extractSkills, type Pitch, type Idea, type Outreach } from "@/lib/thesis.functions";
 import { addJob } from "@/lib/tracker";
 import { setInterviewSetup } from "@/lib/interview-store";
@@ -113,7 +114,7 @@ function ThesisPage() {
     if (cv.trim().length < 30 && !skills.length) { setError("Add your CV or a few skills first."); return; }
     setError(null); setPitch(null); setOut(null); setSaved(false); setLoading(true); setMsg(0);
     try {
-      const r = await generatePitch({ data: base() });
+      const r = await withDeadline(generatePitch({ data: base() }));
       if (r.ok) {
         setUsed({ lang, country, roast });
         setPitch(r.result); setSel(r.result.best_index); setOut(r.result);
@@ -254,19 +255,17 @@ function ThesisPage() {
 
         {loading && (
           <div className="mt-10 space-y-4" aria-live="polite">
-            <div className="glass flex items-center gap-4 rounded-3xl p-5">
-              <span className="relative grid h-10 w-10 place-items-center"><span className="absolute inset-0 animate-ping rounded-full bg-primary/20" /><span className="h-3 w-3 rounded-full bg-primary" /></span>
-              <AnimatePresence mode="wait">
-                <motion.span key={msg} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} className="font-medium text-foreground">{LOADING[msg]}</motion.span>
-              </AnimatePresence>
-            </div>
+            <LongProgress steps={["Reading your profile", "Shaping thesis ideas", "Writing your outreach"]} expected="30–60 seconds" stepAt={15} />
+            <AnimatePresence mode="wait">
+              <motion.p key={msg} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} className="px-2 text-sm text-muted-foreground">{LOADING[msg]}</motion.p>
+            </AnimatePresence>
             <div className="grid gap-4 sm:grid-cols-3">
               {[0, 1, 2].map((k) => <div key={k} className="glass rounded-3xl p-5"><div className="skeleton mx-auto h-20 w-20 rounded-full" /><div className="skeleton mt-4 h-4 w-4/5 rounded-full" /><div className="skeleton mt-2 h-3 w-full rounded-full" /><div className="skeleton mt-2 h-3 w-2/3 rounded-full" /></div>)}
             </div>
           </div>
         )}
 
-        {error && <div role="alert" className="mt-10 rounded-3xl border border-destructive/30 bg-destructive/10 p-5 text-destructive">{error}</div>}
+        {error && !loading && <div className="mt-10"><TaskError message={error} onRetry={onGenerate} /></div>}
 
         {pitch && idea && out && (
           <motion.section id="pitch" dir={rtl ? "rtl" : "ltr"} className="mt-14 scroll-mt-24 space-y-5" initial="hidden" animate="show"

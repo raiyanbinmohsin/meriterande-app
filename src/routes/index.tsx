@@ -5,6 +5,7 @@ import { decodeAd, LANGS, COUNTRIES, countryOf, type DecodeResult } from "@/lib/
 import { addJob } from "@/lib/tracker";
 import { takePendingAd } from "@/lib/ad-store";
 import { Link } from "@tanstack/react-router";
+import { LongProgress, TaskError, withDeadline } from "@/components/LongTask";
 import { recommendAd, type CompareResult } from "@/lib/compare.functions";
 import { CompareTable } from "@/components/CompareTable";
 import { HighlightedAd } from "@/components/HighlightedAd";
@@ -74,6 +75,7 @@ function Index() {
     setTimeout(() => document.getElementById("decode")?.scrollIntoView({ behavior: "smooth" }), 300);
   }, []);
   const [compare, setCompare] = useState(false);
+  const [cStep, setCStep] = useState<{ step: number; done: number; total: number } | null>(null);
   const [extraAds, setExtraAds] = useState<string[]>(["", ""]);
   const [compareRes, setCompareRes] = useState<DecodeResult[] | null>(null);
   const [rec, setRec] = useState<CompareResult | null>(null);
@@ -120,22 +122,26 @@ function Index() {
     if (cv.trim().length < 30) { setError("Add your CV so each ad can be scored against it."); return; }
     setError(null); setResult(null); setCompareRes(null); setRec(null); setLoading(true); setMsgIdx(0);
     try {
-      const rs = await Promise.all(ads.map((a) => decodeAd({ data: { ad: a, cv, lang, roast, country } })));
+      setCStep({ step: 0, done: 0, total: ads.length });
+      const rs = await withDeadline(Promise.all(ads.map((a) => decodeAd({ data: { ad: a, cv, lang, roast, country } }).then((r) => {
+        setCStep((c) => c && { ...c, done: c.done + 1 }); return r;
+      }))));
       const bad = rs.find((r) => !r.ok);
       if (bad && !bad.ok) { setError(bad.error); return; }
       const results = rs.map((r) => (r as { ok: true; result: DecodeResult }).result);
       setUsed({ lang, roast, country });
       setCompareRes(results);
       setTimeout(() => document.getElementById("results")?.scrollIntoView({ behavior: "smooth" }), 50);
-      const rr = await recommendAd({ data: { lang, roast, rows: results.map((r, i) => ({
+      setCStep((c) => c && { ...c, step: 1 });
+      const rr = await withDeadline(recommendAd({ data: { lang, roast, rows: results.map((r, i) => ({
         label: `Ad ${i + 1}`, summary: r.role_summary, score: r.fit?.score ?? 0, swedish: r.swedish.verdict,
         met: r.fit?.must_haves_met ?? 0, total: r.must_haves.length, time: r.fit?.time_to_close ?? "", gaps: r.fit?.gaps ?? [],
-      })) } });
+      })) } }));
       if (rr.ok) setRec(rr.result); else setError(rr.error);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Something went wrong. Please try again.");
     } finally {
-      setLoading(false);
+      setLoading(false); setCStep(null);
     }
   }
 
