@@ -22,8 +22,7 @@ export async function rateLimit(kind: RateKind): Promise<{ ok: false; error: str
     const { count } = await supabaseAdmin.from("rate_events").select("id", { count: "exact", head: true }).eq("key_hash", key).eq("kind", kind).gte("created_at", since);
     if ((count ?? 0) >= RATE_LIMITS[kind]) return { ok: false, error: limitMessage(kind) };
     await supabaseAdmin.from("rate_events").insert({ key_hash: key, kind });
-    // Housekeeping: rate records are only needed for a day.
-    if (Math.random() < 0.02) await supabaseAdmin.from("rate_events").delete().lt("created_at", new Date(Date.now() - 86400_000).toISOString());
+    // Records older than 24h are removed by the scheduled purge_expired_data() job.
     return null;
   } catch (e) {
     console.error("rateLimit", e);
