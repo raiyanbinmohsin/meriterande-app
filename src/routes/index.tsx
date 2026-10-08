@@ -190,6 +190,15 @@ function Index() {
           <Field label={compare ? "Job ad 1" : "Paste the job ad (Swedish or English)"} required value={ad} onChange={setAd} rows={9}
             placeholder="Vi söker en Data Engineer till vårt team i Stockholm..." />
           {!compare && country === "Sweden" && <HighlightedAd text={ad} />}
+          {compare && (
+            <AdPicker onPick={(text) => {
+              const slots = [ad, ...extraAds];
+              const free = slots.findIndex((x) => x.trim().length < 30);
+              const i = free === -1 ? slots.length - 1 : free;
+              if (i === 0) setAd(text); else setExtraAds(extraAds.map((y, j) => (j === i - 1 ? text : y)));
+              setError(null);
+            }} />
+          )}
           {compare && extraAds.map((x, i) => (
             <Field key={i} label={`Job ad ${i + 2}${i === 1 ? " (optional)" : ""}`} required={i === 0} value={x} rows={6}
               onChange={(v) => setExtraAds(extraAds.map((y, j) => (j === i ? v : y)))} placeholder="Paste another job ad..." />
