@@ -442,6 +442,7 @@ function List({ items, dot }: { items: string[]; dot: string }) {
 
 function SwedishCard({ s, title = "Swedish language" }: { s: DecodeResult["swedish"]; title?: string }) {
   const tone = s.verdict === "Required" ? "bg-destructive/12 text-destructive"
+    : s.verdict === "Very likely required" ? "bg-destructive/12 text-destructive"
     : s.verdict === "Helpful" ? "bg-accent text-accent-foreground"
     : s.verdict === "Not needed" ? "bg-success/15 text-success" : "bg-muted text-muted-foreground";
   return (
