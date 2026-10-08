@@ -49,7 +49,7 @@ export function BookmarkletButton({ variant = "header", onOpen }: { variant?: "h
       </button>}
       {open && createPortal(<AnimatePresence>
         {open && (
-          <motion.div className="fixed inset-0 z-50 grid place-items-center bg-navy/50 p-4 backdrop-blur-sm" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+          <motion.div className="fixed inset-0 z-[60] grid place-items-center bg-navy/50 p-4 backdrop-blur-sm" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
             onClick={() => setOpen(false)}>
             <motion.div role="dialog" aria-modal="true" aria-label="Add Meriterande to your browser"
               initial={{ opacity: 0, y: 20, scale: 0.97 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: 10 }}
