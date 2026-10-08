@@ -5,11 +5,11 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 // which is callable by the server alone — and only for signed-in users who opted in.
 export const loadInsights = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .handler(async ({ context }): Promise<unknown> => {
+  .handler(async ({ context }): Promise<{ ready: boolean; [k: string]: unknown }> => {
     const { data: me } = await context.supabase.from("user_data").select("share_insights").eq("user_id", context.userId).maybeSingle();
     if (!me?.share_insights) return { ready: false, joined: 0, needed: 10, optedIn: false };
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data, error } = await supabaseAdmin.rpc("get_insights");
     if (error) { console.error("get_insights", error); return { ready: false, joined: 0, needed: 10 }; }
-    return data;
+    return JSON.parse(JSON.stringify(data ?? { ready: false })) as { ready: boolean; [k: string]: unknown };
   });
