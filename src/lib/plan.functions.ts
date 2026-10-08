@@ -87,7 +87,8 @@ export const buildPlan = createServerFn({ method: "POST" })
   .inputValidator((d: { ad: string; cv: string; score: number; gaps: string[]; hours: number; styles: string[]; target: string; lang?: string; roast?: boolean; country?: string }) => {
     const ad = String(d?.ad ?? "").trim(), cv = String(d?.cv ?? "").trim();
     if (!ad || !cv) throw new Error("A job ad and CV are required.");
-    if (ad.length > 20000 || cv.length > 20000) throw new Error("Text is too long.");
+    if (ad.length > 15000) throw new Error("The job ad is too long (max 15,000 characters).");
+    if (cv.length > 20000) throw new Error("The CV is too long (max 20,000 characters).");
     const hours = Math.max(2, Math.min(40, Math.round(Number(d.hours) || 5)));
     const styles = (Array.isArray(d.styles) ? d.styles : []).map(String).slice(0, 4);
     const target = String(d.target ?? "1 month").slice(0, 20);
@@ -95,6 +96,7 @@ export const buildPlan = createServerFn({ method: "POST" })
     return { country: String(d.country ?? "Sweden"), lang: String(d.lang ?? "English"), roast: !!d.roast, ad, cv, score: Math.max(0, Math.min(100, Number(d.score) || 0)), gaps, hours, styles, target };
   })
   .handler(async ({ data }): Promise<{ ok: true; result: PlanResult } | { ok: false; error: string }> => {
+    { const rl = await (await import("./rate-limit.server")).rateLimit("plan"); if (rl) return rl; }
     const key = process.env["LOVABLE_API_KEY"];
     if (!key) return { ok: false, error: "AI is not configured." };
     const input = `JOB AD:\n"""\n${data.ad}\n"""\n\nCV:\n"""\n${data.cv}\n"""\n\nCURRENT FIT SCORE: ${data.score}/100\nIDENTIFIED GAPS:\n${data.gaps.map((g) => `- ${g}`).join("\n")}\n\nHOURS PER WEEK: ${data.hours}\nLEARNS BEST VIA: ${data.styles.join(", ") || "no preference"}\nTARGET APPLICATION DATE: in ${data.target}`;

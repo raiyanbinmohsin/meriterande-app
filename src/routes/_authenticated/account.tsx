@@ -1,10 +1,11 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { OG_IMAGE } from "@/lib/seo";
 import { useState } from "react";
 import { Download, Trash2 } from "lucide-react";
 import { SiteHeader, SiteFooter } from "@/components/landing";
 import { DeleteDialog } from "@/components/AccountMenu";
 import { useAuth } from "@/lib/auth";
-import { useSync, setShareInsights, acceptMerge } from "@/lib/sync";
+import { useSync, setShareInsights, setSaveCv, acceptMerge } from "@/lib/sync";
 import { useJobs } from "@/lib/tracker";
 import { useCvText } from "@/lib/cv-store";
 import { useProgress } from "@/lib/progress";
@@ -16,8 +17,8 @@ export const Route = createFileRoute("/_authenticated/account")({
       { name: "description", content: "See and manage the data synced to your Meriterande account." },
       { property: "og:title", content: "My data — Meriterande" },
       { property: "og:description", content: "See and manage the data synced to your Meriterande account." },
-      { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary" },
+      { property: "og:type", content: "website" }, { property: "og:image", content: OG_IMAGE }, { name: "twitter:image", content: OG_IMAGE },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: Account,
@@ -57,6 +58,14 @@ function Account() {
             <div className={row}><span>Roadmaps with progress</span><strong>{Object.keys(prog.roadmaps).length}</strong></div>
             <div className={row}><span>Swedish phrases learned</span><strong>{prog.phrasesLearned.length}</strong></div>
           </div>
+        </div>
+        <div className="glass rounded-3xl p-6">
+          <h2 className="text-2xl font-semibold">Save my CV to my account</h2>
+          <p className="mt-1 text-sm text-muted-foreground">Off by default: your CV stays only in this browser. Turn it on to sync it across your devices. Turning it off deletes the CV from our servers. <Link to="/privacy" className="text-primary underline-offset-4 hover:underline">Privacy</Link></p>
+          <label className="mt-4 flex min-h-11 items-center gap-3 font-semibold">
+            <input type="checkbox" className="h-5 w-5 accent-primary" checked={sync.saveCv} onChange={async (e) => setErr((await setSaveCv(e.target.checked)) ?? null)} />
+            Save my CV to my account
+          </label>
         </div>
         <div className="glass rounded-3xl p-6">
           <h2 className="text-2xl font-semibold">Share anonymous skill-gap data</h2>

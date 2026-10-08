@@ -18,11 +18,14 @@ import { Route as FindRouteImport } from './routes/find'
 import { Route as InsightsRouteImport } from './routes/insights'
 import { Route as InterviewRouteImport } from './routes/interview'
 import { Route as LearnRouteImport } from './routes/learn'
+import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
+import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as ThesisRouteImport } from './routes/thesis'
 import { Route as TrackerRouteImport } from './routes/tracker'
 import { Route as AuthenticatedAccountRouteImport } from './routes/_authenticated/account'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
+import { Route as DictionaryTermRouteImport } from './routes/dictionary_.$term'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -68,9 +71,19 @@ const LearnRoute = LearnRouteImport.update({
   path: '/learn',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PrivacyRoute = PrivacyRouteImport.update({
+  id: '/privacy',
+  path: '/privacy',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ResetPasswordRoute = ResetPasswordRouteImport.update({
   id: '/reset-password',
   path: '/reset-password',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
+  id: '/sitemap.xml',
+  path: '/sitemap.xml',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ThesisRoute = ThesisRouteImport.update({
@@ -93,6 +106,11 @@ const AuthenticatedAdminRoute = AuthenticatedAdminRouteImport.update({
   path: '/admin',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const DictionaryTermRoute = DictionaryTermRouteImport.update({
+  id: '/dictionary_/$term',
+  path: '/dictionary/$term',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -103,11 +121,14 @@ export interface FileRoutesByFullPath {
   '/insights': typeof InsightsRoute
   '/interview': typeof InterviewRoute
   '/learn': typeof LearnRoute
+  '/privacy': typeof PrivacyRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/thesis': typeof ThesisRoute
   '/tracker': typeof TrackerRoute
   '/account': typeof AuthenticatedAccountRoute
   '/admin': typeof AuthenticatedAdminRoute
+  '/dictionary/$term': typeof DictionaryTermRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -118,11 +139,14 @@ export interface FileRoutesByTo {
   '/insights': typeof InsightsRoute
   '/interview': typeof InterviewRoute
   '/learn': typeof LearnRoute
+  '/privacy': typeof PrivacyRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/thesis': typeof ThesisRoute
   '/tracker': typeof TrackerRoute
   '/account': typeof AuthenticatedAccountRoute
   '/admin': typeof AuthenticatedAdminRoute
+  '/dictionary/$term': typeof DictionaryTermRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -135,11 +159,14 @@ export interface FileRoutesById {
   '/insights': typeof InsightsRoute
   '/interview': typeof InterviewRoute
   '/learn': typeof LearnRoute
+  '/privacy': typeof PrivacyRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/thesis': typeof ThesisRoute
   '/tracker': typeof TrackerRoute
   '/_authenticated/account': typeof AuthenticatedAccountRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRoute
+  '/dictionary_/$term': typeof DictionaryTermRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -152,11 +179,14 @@ export interface FileRouteTypes {
     | '/insights'
     | '/interview'
     | '/learn'
+    | '/privacy'
     | '/reset-password'
+    | '/sitemap.xml'
     | '/thesis'
     | '/tracker'
     | '/account'
     | '/admin'
+    | '/dictionary/$term'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -167,11 +197,14 @@ export interface FileRouteTypes {
     | '/insights'
     | '/interview'
     | '/learn'
+    | '/privacy'
     | '/reset-password'
+    | '/sitemap.xml'
     | '/thesis'
     | '/tracker'
     | '/account'
     | '/admin'
+    | '/dictionary/$term'
   id:
     | '__root__'
     | '/'
@@ -183,11 +216,14 @@ export interface FileRouteTypes {
     | '/insights'
     | '/interview'
     | '/learn'
+    | '/privacy'
     | '/reset-password'
+    | '/sitemap.xml'
     | '/thesis'
     | '/tracker'
     | '/_authenticated/account'
     | '/_authenticated/admin'
+    | '/dictionary_/$term'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -200,9 +236,12 @@ export interface RootRouteChildren {
   InsightsRoute: typeof InsightsRoute
   InterviewRoute: typeof InterviewRoute
   LearnRoute: typeof LearnRoute
+  PrivacyRoute: typeof PrivacyRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
+  SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   ThesisRoute: typeof ThesisRoute
   TrackerRoute: typeof TrackerRoute
+  DictionaryTermRoute: typeof DictionaryTermRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -270,11 +309,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LearnRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/privacy': {
+      id: '/privacy'
+      path: '/privacy'
+      fullPath: '/privacy'
+      preLoaderRoute: typeof PrivacyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/reset-password': {
       id: '/reset-password'
       path: '/reset-password'
       fullPath: '/reset-password'
       preLoaderRoute: typeof ResetPasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/sitemap.xml': {
+      id: '/sitemap.xml'
+      path: '/sitemap.xml'
+      fullPath: '/sitemap.xml'
+      preLoaderRoute: typeof SitemapDotxmlRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/thesis': {
@@ -305,6 +358,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/dictionary_/$term': {
+      id: '/dictionary_/$term'
+      path: '/dictionary/$term'
+      fullPath: '/dictionary/$term'
+      preLoaderRoute: typeof DictionaryTermRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -331,9 +391,12 @@ const rootRouteChildren: RootRouteChildren = {
   InsightsRoute: InsightsRoute,
   InterviewRoute: InterviewRoute,
   LearnRoute: LearnRoute,
+  PrivacyRoute: PrivacyRoute,
   ResetPasswordRoute: ResetPasswordRoute,
+  SitemapDotxmlRoute: SitemapDotxmlRoute,
   ThesisRoute: ThesisRoute,
   TrackerRoute: TrackerRoute,
+  DictionaryTermRoute: DictionaryTermRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

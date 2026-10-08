@@ -29,6 +29,51 @@ export type Database = {
         }
         Relationships: []
       }
+      analytics_events: {
+        Row: {
+          created_at: string
+          id: number
+          name: string
+          path: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: never
+          name: string
+          path?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: never
+          name?: string
+          path?: string | null
+        }
+        Relationships: []
+      }
+      feedback: {
+        Row: {
+          created_at: string
+          id: string
+          message: string
+          page: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          message: string
+          page?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          message?: string
+          page?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       insight_events: {
         Row: {
           created_at: string
@@ -53,6 +98,27 @@ export type Database = {
           id?: string
           job_title?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      rate_events: {
+        Row: {
+          created_at: string
+          id: number
+          key_hash: string
+          kind: string
+        }
+        Insert: {
+          created_at?: string
+          id?: never
+          key_hash: string
+          kind: string
+        }
+        Update: {
+          created_at?: string
+          id?: never
+          key_hash?: string
+          kind?: string
         }
         Relationships: []
       }
@@ -96,6 +162,7 @@ export type Database = {
         Row: {
           cv: string
           progress: Json
+          save_cv: boolean
           share_insights: boolean
           tracker: Json
           updated_at: string
@@ -104,6 +171,7 @@ export type Database = {
         Insert: {
           cv?: string
           progress?: Json
+          save_cv?: boolean
           share_insights?: boolean
           tracker?: Json
           updated_at?: string
@@ -112,6 +180,7 @@ export type Database = {
         Update: {
           cv?: string
           progress?: Json
+          save_cv?: boolean
           share_insights?: boolean
           tracker?: Json
           updated_at?: string

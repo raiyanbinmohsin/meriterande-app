@@ -104,10 +104,12 @@ export const decodeAd = createServerFn({ method: "POST" })
     const ad = String(d?.ad ?? "").trim();
     const cv = String(d?.cv ?? "").trim();
     if (ad.length < 30) throw new Error("Please paste a longer job ad.");
-    if (ad.length > 20000 || cv.length > 20000) throw new Error("Text is too long (max 20,000 characters each).");
+    if (ad.length > 15000) throw new Error("The job ad is too long (max 15,000 characters).");
+    if (cv.length > 20000) throw new Error("The CV is too long (max 20,000 characters).");
     return { ad, cv, lang: String(d?.lang ?? "English"), roast: !!d?.roast, country: countryOf(String(d?.country ?? "Sweden")).name };
   })
   .handler(async ({ data }): Promise<{ ok: true; result: DecodeResult } | { ok: false; error: string }> => {
+    { const rl = await (await import("./rate-limit.server")).rateLimit("decode"); if (rl) return rl; }
     const key = process.env["LOVABLE_API_KEY"];
     if (!key) return { ok: false, error: "AI is not configured." };
     const input = `JOB AD:\n"""\n${data.ad}\n"""\n\nCV:\n${data.cv ? `"""\n${data.cv}\n"""` : "(none provided — fit must be null)"}`;

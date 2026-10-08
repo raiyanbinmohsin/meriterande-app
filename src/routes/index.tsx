@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { OG_IMAGE } from "@/lib/seo";
 import { AdLinkFetch } from "@/components/AdLinkFetch";
 import { useEffect, useState } from "react";
 import { decodeAd, LANGS, COUNTRIES, countryOf, type DecodeResult } from "@/lib/decode.functions";
@@ -13,6 +14,7 @@ import { recommendAd, type CompareResult } from "@/lib/compare.functions";
 import { CompareTable } from "@/components/CompareTable";
 import { HighlightedAd } from "@/components/HighlightedAd";
 import { downloadShareImage } from "@/components/share-image";
+import { track } from "@/lib/analytics.functions";
 import { SAMPLE_AD } from "@/lib/sample-ad";
 import { CloseTheGap } from "@/components/CloseTheGap";
 import { CvUpload } from "@/components/CvUpload";
@@ -35,7 +37,7 @@ export const Route = createFileRoute("/")({
       { name: "description", content: DESC },
       { property: "og:title", content: TITLE },
       { property: "og:description", content: DESC },
-      { property: "og:type", content: "website" },
+      { property: "og:type", content: "website" }, { property: "og:image", content: OG_IMAGE }, { name: "twitter:image", content: OG_IMAGE },
       { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
@@ -114,8 +116,10 @@ function Index() {
     setLoading(true);
     setMsgIdx(0);
     try {
+      track("decode_started");
       const r = await decodeAd({ data: { ad, cv, lang, roast, country } });
       if (r.ok) {
+        track("decode_completed");
         setUsed({ lang, roast, country });
         setResult(r.result);
         setDecodedAd(ad);
@@ -276,7 +280,7 @@ function Index() {
                     Save to tracker
                   </button>
                 )}
-                <button onClick={() => downloadShareImage(result, rtl)}
+                <button onClick={() => { track("share_card_downloaded"); void downloadShareImage(result, rtl); }}
                   className="glass h-11 rounded-full px-5 text-sm font-semibold text-foreground transition hover:-translate-y-0.5">
                   Share image
                 </button>

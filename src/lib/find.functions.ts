@@ -73,6 +73,7 @@ export const findJobs = createServerFn({ method: "POST" })
     return { keywords, city: String(d?.city ?? "").trim().slice(0, 60), cv: String(d?.cv ?? "").trim().slice(0, 20000) };
   })
   .handler(async ({ data }): Promise<{ ok: true; jobs: FoundJob[]; note: string } | { ok: false; error: string }> => {
+    { const rl = await (await import("./rate-limit.server")).rateLimit("find"); if (rl) return rl; }
     let hits: Hit[];
     try {
       const q = [data.keywords, data.city].filter(Boolean).join(" ");

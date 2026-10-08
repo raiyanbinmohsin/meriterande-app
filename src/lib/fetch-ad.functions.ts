@@ -74,9 +74,16 @@ function isPrivateHost(host: string) {
     h === "::1" || h.startsWith("fc") || h.startsWith("fd") || h.startsWith("fe80");
 }
 
+const HEADERS = {
+  "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124 Safari/537.36",
+  accept: "text/html,application/xhtml+xml",
+  "accept-language": "sv-SE,sv;q=0.9,en;q=0.8",
+};
+
 export const fetchAd = createServerFn({ method: "POST" })
   .inputValidator((d: { url: string }) => ({ url: String(d?.url ?? "").trim().slice(0, 2000) }))
   .handler(async ({ data }): Promise<{ ok: true; text: string } | { ok: false; error: string }> => {
+    { const rl = await (await import("./rate-limit.server")).rateLimit("fetch"); if (rl) return rl; }
     try {
       let url: URL;
       try { url = new URL(/^https?:\/\//i.test(data.url) ? data.url : `https://${data.url}`); }
@@ -92,14 +99,17 @@ export const fetchAd = createServerFn({ method: "POST" })
         return text.length < 100 ? { ok: false, error: BLOCKED } : { ok: true, text: text.slice(0, MAX) };
       }
 
-      const r = await fetch(url.toString(), {
-        redirect: "follow",
-        headers: {
-          "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124 Safari/537.36",
-          accept: "text/html,application/xhtml+xml",
-          "accept-language": "sv-SE,sv;q=0.9,en;q=0.8",
-        },
-      });
+      // Follow redirects manually so every hop is checked against private/internal hosts.
+      let r: Response | null = null;
+      for (let hop = 0; hop < 5; hop++) {
+        r = await fetch(url.toString(), { redirect: "manual", headers: HEADERS });
+        const loc = r.status >= 300 && r.status < 400 ? r.headers.get("location") : null;
+        if (!loc) break;
+        try { url = new URL(loc, url); } catch { return { ok: false, error: BLOCKED }; }
+        if (!/^https?:$/.test(url.protocol) || isPrivateHost(url.hostname)) return { ok: false, error: BLOCKED };
+        r = null;
+      }
+      if (!r) return { ok: false, error: BLOCKED };
       if (!r.ok || !(r.headers.get("content-type") ?? "").includes("html")) return { ok: false, error: BLOCKED };
       const html = (await r.text()).slice(0, 2_000_000);
       const ld = jobPostingFromJsonLd(html);

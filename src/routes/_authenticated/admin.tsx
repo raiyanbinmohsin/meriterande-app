@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { OG_IMAGE } from "@/lib/seo";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { SiteHeader } from "@/components/landing";
@@ -11,8 +12,8 @@ export const Route = createFileRoute("/_authenticated/admin")({
       { name: "description", content: "Approve or reject submitted success stories." },
       { property: "og:title", content: "Review stories — Meriterande" },
       { property: "og:description", content: "Approve or reject submitted success stories." },
-      { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary" },
+      { property: "og:type", content: "website" }, { property: "og:image", content: OG_IMAGE }, { name: "twitter:image", content: OG_IMAGE },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: Admin,

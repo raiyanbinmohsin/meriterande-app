@@ -13,3 +13,5 @@
 - [x] Cover letter settings-changed state
 - [x] Mobile header menu
 - [x] Bookmarklet touch instructions
+- [x] Launch hardening: email confirmation, rate limits, input caps, CV opt-in, /privacy, full deletion, security review
+- [x] Growth: dictionary term pages + sitemap, analytics events, feedback button, OG images

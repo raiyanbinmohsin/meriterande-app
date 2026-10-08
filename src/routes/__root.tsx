@@ -14,6 +14,7 @@ import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { startSync } from "../lib/sync";
 import { SyncPrompt } from "../components/AccountMenu";
+import { FeedbackButton } from "../components/FeedbackButton";
 
 function NotFoundComponent() {
   return (
@@ -82,7 +83,6 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "viewport", content: "width=device-width, initial-scale=1" },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
-      { name: "twitter:site", content: "@Lovable" },
     ],
     links: [
       {
@@ -125,6 +125,7 @@ function RootComponent() {
       {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
       <Outlet />
       {mounted && <SyncPrompt />}
+      {mounted && <FeedbackButton />}
     </QueryClientProvider>
   );
 }

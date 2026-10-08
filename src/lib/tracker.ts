@@ -47,6 +47,7 @@ export function subscribeJobs(f: () => void) { subs.add(f); return () => { subs.
 export function addJob(j: Pick<Job, "title" | "company" | "score" | "verdict"> & { kind?: JobKind; adText?: string }) {
   const job: Job = { kind: "job", ...j, id: crypto.randomUUID(), savedOn: today(), column: "Saved", notes: "", deadline: "", appliedOn: "", reachedInterview: false };
   write([job, ...read()]);
+  void import("./analytics.functions").then((m) => m.track("tracker_card_saved"));
   return job;
 }
 

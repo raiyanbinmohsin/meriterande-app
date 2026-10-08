@@ -1,4 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { OG_IMAGE } from "@/lib/seo";
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { SiteHeader, SiteFooter } from "@/components/landing";
@@ -10,8 +11,8 @@ export const Route = createFileRoute("/auth")({
       { name: "description", content: "Optional account to sync your tracker, CV and roadmap progress across devices." },
       { property: "og:title", content: "Sign in to sync — Meriterande" },
       { property: "og:description", content: "Optional account to sync your tracker, CV and roadmap progress across devices." },
-      { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary" },
+      { property: "og:type", content: "website" }, { property: "og:image", content: OG_IMAGE }, { name: "twitter:image", content: OG_IMAGE },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: AuthPage,

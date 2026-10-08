@@ -1,9 +1,11 @@
 import { Link, createFileRoute } from "@tanstack/react-router";
+import { OG_IMAGE } from "@/lib/seo";
 import { useMemo, useState } from "react";
 import { motion } from "motion/react";
 import { Search } from "lucide-react";
 import { SiteHeader, SiteFooter } from "@/components/landing";
 import { TERMS } from "@/lib/dictionary";
+import { slugOf } from "@/lib/dictionary-examples";
 
 const TITLE = "Swedish job-ad dictionary — Meriterande";
 const DESC = "50+ common Swedish job-ad terms like meriterande, provanställning and löpande urval, with plain-English meaning and what they really mean for you.";
@@ -15,7 +17,7 @@ export const Route = createFileRoute("/dictionary")({
       { name: "description", content: DESC },
       { property: "og:title", content: TITLE },
       { property: "og:description", content: DESC },
-      { property: "og:type", content: "website" },
+      { property: "og:type", content: "website" }, { property: "og:image", content: OG_IMAGE }, { name: "twitter:image", content: OG_IMAGE },
       { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
@@ -50,7 +52,7 @@ function DictionaryPage() {
           {list.map((t, i) => (
             <motion.article key={t.term} initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
               transition={{ duration: 0.4, delay: Math.min(i, 8) * 0.03 }} className="glass lift rounded-3xl p-5">
-              <h2 className="text-2xl text-foreground">{t.term}</h2>
+              <h2 className="text-2xl text-foreground"><Link to="/dictionary/$term" params={{ term: slugOf(t.term) }} className="hover:text-primary">{t.term}</Link></h2>
               <p className="text-sm font-semibold text-primary">{t.english}</p>
               <p className="mt-2 text-muted-foreground">{t.really}</p>
               <Link to="/learn" search={{ phrase: t.term }} className="mt-2 inline-flex min-h-11 items-center text-sm font-semibold text-primary">Mini lesson →</Link>

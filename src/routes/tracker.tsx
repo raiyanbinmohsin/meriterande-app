@@ -1,4 +1,5 @@
 import { EmptyBoardIllustration } from "@/components/illustrations";
+import { OG_IMAGE } from "@/lib/seo";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { Download, Trash2 } from "lucide-react";
@@ -15,7 +16,7 @@ export const Route = createFileRoute("/tracker")({
       { name: "description", content: DESC },
       { property: "og:title", content: TITLE },
       { property: "og:description", content: DESC },
-      { property: "og:type", content: "website" },
+      { property: "og:type", content: "website" }, { property: "og:image", content: OG_IMAGE }, { name: "twitter:image", content: OG_IMAGE },
       { name: "twitter:card", content: "summary_large_image" },
     ],
   }),

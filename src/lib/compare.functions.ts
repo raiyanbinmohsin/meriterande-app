@@ -25,6 +25,7 @@ export const recommendAd = createServerFn({ method: "POST" })
     return { rows, lang: String(d?.lang ?? "English"), roast: !!d?.roast };
   })
   .handler(async ({ data }): Promise<{ ok: true; result: CompareResult } | { ok: false; error: string }> => {
+    { const rl = await (await import("./rate-limit.server")).rateLimit("compare"); if (rl) return rl; }
     const key = process.env["LOVABLE_API_KEY"];
     if (!key) return { ok: false, error: "AI is not configured." };
     const res = await fetch("https://ai.gateway.lovable.dev/v1/responses", {
