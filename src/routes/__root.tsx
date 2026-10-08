@@ -39,7 +39,8 @@ function NotFoundComponent() {
 }
 
 // After a new deploy, an open tab still references old code chunks that no longer exist.
-const STALE_CHUNK = /Failed to fetch dynamically imported module|error loading dynamically imported module|Importing a module script failed|Loading chunk .* failed/i;
+// A failed route-code load can also surface as "e is undefined" when the router reads `.component`.
+const STALE_CHUNK = /Failed to fetch dynamically imported module|error loading dynamically imported module|Importing a module script failed|Loading chunk .* failed|can't access property "component"|reading 'component'|undefined is not an object \(evaluating '[^']*\.component'\)/i;
 const RELOAD_KEY = "meriterande.chunkReloadAt";
 
 function ErrorComponent({ error, reset }: ErrorComponentProps) {
