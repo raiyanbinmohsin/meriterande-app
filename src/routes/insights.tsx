@@ -2,7 +2,8 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { motion } from "motion/react";
 import { Lock, Share2, Users } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
+import { useServerFn } from "@tanstack/react-start";
+import { loadInsights } from "@/lib/insights.functions";
 import { SiteHeader, SiteFooter } from "@/components/landing";
 import { useAuth } from "@/lib/auth";
 import { useSync, setShareInsights } from "@/lib/sync";
@@ -43,9 +44,11 @@ function Insights() {
   const { user, ready } = useAuth();
   const sync = useSync();
   const [data, setData] = useState<Data | null>(null);
+  const load = useServerFn(loadInsights);
   useEffect(() => {
     if (!user || !sync.shareInsights) return;
-    supabase.rpc("get_insights").then(({ data }) => setData((data as unknown as Data) ?? { ready: false }));
+    load().then((d) => setData((d as Data) ?? { ready: false })).catch(() => setData({ ready: false }));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user, sync.shareInsights]);
 
   return (
