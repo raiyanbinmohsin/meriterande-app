@@ -38,10 +38,25 @@ function NotFoundComponent() {
   );
 }
 
+// After a new deploy, an open tab still references old code chunks that no longer exist.
+const STALE_CHUNK = /Failed to fetch dynamically imported module|error loading dynamically imported module|Importing a module script failed|Loading chunk .* failed/i;
+const RELOAD_KEY = "meriterande.chunkReloadAt";
+
 function ErrorComponent({ error, reset }: ErrorComponentProps) {
   console.error(error);
   const router = useRouter();
   useEffect(() => {
+    const msg = error instanceof Error ? error.message : String(error);
+    if (STALE_CHUNK.test(msg)) {
+      try {
+        const last = Number(sessionStorage.getItem(RELOAD_KEY) || 0);
+        if (Date.now() - last > 30_000) {
+          sessionStorage.setItem(RELOAD_KEY, String(Date.now()));
+          window.location.reload();
+          return;
+        }
+      } catch { /* storage unavailable: fall through to the error screen */ }
+    }
     reportLovableError(error, { boundary: "tanstack_root_error_component" });
   }, [error]);
 
