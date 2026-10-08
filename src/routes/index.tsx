@@ -49,6 +49,16 @@ const LOADING = [
   "Reading between the lagom lines...",
 ];
 
+// Official national statistics offices only — the app never generates salary numbers.
+export const SALARY_SOURCES: Record<string, { name: string; url: string }> = {
+  Sweden: { name: "Statistics Sweden (SCB Lönesök)", url: "https://www.scb.se/hitta-statistik/sverige-i-siffror/lonesok/" },
+  Norway: { name: "Statistics Norway (SSB)", url: "https://www.ssb.no/en/arbeid-og-lonn/lonn-og-arbeidskraftkostnader/statistikk/lonn" },
+  Denmark: { name: "Statistics Denmark (Danmarks Statistik)", url: "https://www.dst.dk/en/Statistik/emner/arbejde-og-indkomst/indkomst-og-loen/loen" },
+  Finland: { name: "Statistics Finland", url: "https://stat.fi/en/statistics/pra" },
+  Germany: { name: "the Federal Statistical Office (Destatis)", url: "https://www.destatis.de/EN/Themes/Labour/Earnings/_node.html" },
+  Netherlands: { name: "Statistics Netherlands (CBS)", url: "https://www.cbs.nl/en-gb/labour-and-income" },
+};
+
 function Index() {
   const [ad, setAd] = useState("");
   const [cv, setCv] = useCvText();
@@ -311,13 +321,13 @@ function Index() {
               </Card>
             </Item>
 
-            {used.country === "Sweden" && (
+            {SALARY_SOURCES[used.country] && (
               <Item>
-                <a href="https://www.scb.se/hitta-statistik/sverige-i-siffror/lonesok/" target="_blank" rel="noopener noreferrer"
+                <a href={SALARY_SOURCES[used.country]!.url} target="_blank" rel="noopener noreferrer"
                   className="glass lift flex items-center gap-4 rounded-3xl p-5">
                   <span className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-sun/25 text-foreground"><BarChart3 className="h-6 w-6" /></span>
                   <span><span className="block text-lg font-semibold text-foreground">Check salary statistics ↗</span>
-                    <span className="text-sm text-muted-foreground">Official salary data from Statistics Sweden (SCB Lönesök). We don't estimate salaries.</span></span>
+                    <span className="text-sm text-muted-foreground">Official salary data from {SALARY_SOURCES[used.country]!.name}. We don't estimate salaries.</span></span>
                 </a>
               </Item>
             )}
