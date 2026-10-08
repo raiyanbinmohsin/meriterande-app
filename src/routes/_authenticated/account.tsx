@@ -9,6 +9,7 @@ import { useSync, setShareInsights, setSaveCv, acceptMerge } from "@/lib/sync";
 import { useJobs } from "@/lib/tracker";
 import { useCvText } from "@/lib/cv-store";
 import { useProgress } from "@/lib/progress";
+import { exportMyServerData } from "@/lib/export.functions";
 
 export const Route = createFileRoute("/_authenticated/account")({
   head: () => ({
@@ -33,8 +34,11 @@ function Account() {
   const [del, setDel] = useState(false);
   const [err, setErr] = useState<string | null>(null);
 
-  function exportJson() {
-    const blob = new Blob([JSON.stringify({ email: user?.email, tracker: jobs, cv, progress: prog }, null, 2)], { type: "application/json" });
+  async function exportJson() {
+    setErr(null);
+    let server: Awaited<ReturnType<typeof exportMyServerData>>;
+    try { server = await exportMyServerData(); } catch { setErr("Couldn't download your data. Please try again."); return; }
+    const blob = new Blob([JSON.stringify({ email: user?.email, tracker: jobs, cv, progress: prog, ...server }, null, 2)], { type: "application/json" });
     const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = "meriterande-my-data.json"; a.click();
   }
   const row = "flex items-center justify-between gap-3 border-b border-border py-3 last:border-0";
@@ -77,7 +81,7 @@ function Account() {
           {err && <p className="text-sm text-destructive">{err}</p>}
         </div>
         <div className="flex flex-col gap-2 sm:flex-row">
-          <button onClick={exportJson} className="glass inline-flex h-12 items-center justify-center gap-2 rounded-full px-6 font-semibold"><Download className="h-4 w-4" /> Download my data</button>
+          <button onClick={() => void exportJson()} className="glass inline-flex h-12 items-center justify-center gap-2 rounded-full px-6 font-semibold"><Download className="h-4 w-4" /> Download my data</button>
           <button onClick={() => setDel(true)} className="inline-flex h-12 items-center justify-center gap-2 rounded-full bg-destructive/10 px-6 font-semibold text-destructive"><Trash2 className="h-4 w-4" /> Delete my account and data</button>
         </div>
       </main>
