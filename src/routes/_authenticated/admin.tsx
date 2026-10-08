@@ -25,7 +25,7 @@ function Admin() {
   const [rows, setRows] = useState<Row[]>([]);
   const [tab, setTab] = useState("pending");
   async function load() {
-    const { data } = await supabase.from("stories").select("*").order("created_at", { ascending: false });
+    const { data } = await supabase.from("stories").select("id, name, role, story, status, created_at").order("created_at", { ascending: false });
     setRows((data as Row[]) ?? []);
   }
   useEffect(() => { if (isAdmin) void load(); }, [isAdmin]);
@@ -63,9 +63,52 @@ function Admin() {
                 </div>
               ))}
             </div>
+            <AdminEmails />
           </>
         )}
       </main>
     </div>
+  );
+}
+
+function AdminEmails() {
+  const [list, setList] = useState<string[]>([]);
+  const [email, setEmail] = useState("");
+  const [msg, setMsg] = useState<string | null>(null);
+  async function load() {
+    const { data } = await supabase.from("admin_emails").select("email").order("created_at");
+    setList((data ?? []).map((r) => r.email));
+  }
+  useEffect(() => { void load(); }, []);
+  async function add(e: React.FormEvent) {
+    e.preventDefault(); setMsg(null);
+    const v = email.trim().toLowerCase();
+    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(v)) return setMsg("Enter a valid email.");
+    const { error } = await supabase.from("admin_emails").insert({ email: v });
+    if (error) setMsg("Couldn't add that email."); else { setEmail(""); setMsg("Added. They get admin rights when they sign up with this email."); void load(); }
+  }
+  async function remove(v: string) {
+    const { error } = await supabase.from("admin_emails").delete().eq("email", v);
+    if (error) setMsg("Couldn't remove that email."); else void load();
+  }
+  return (
+    <section className="glass mt-10 rounded-3xl p-6">
+      <h2 className="text-2xl font-semibold">Admin emails</h2>
+      <p className="mt-1 text-sm text-muted-foreground">New accounts with these emails become admins when they sign up.</p>
+      <ul className="mt-4 space-y-2">
+        {list.map((v) => (
+          <li key={v} className="flex items-center justify-between gap-3 rounded-2xl bg-background/60 px-4 py-2 text-sm">
+            <span className="break-all">{v}</span>
+            <button onClick={() => remove(v)} className="h-10 rounded-full px-4 font-semibold text-destructive">Remove</button>
+          </li>
+        ))}
+      </ul>
+      <form onSubmit={add} className="mt-4 flex flex-wrap gap-2">
+        <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="name@example.com" aria-label="Admin email"
+          className="h-11 min-w-0 flex-1 rounded-full border border-input bg-background/70 px-4 text-[16px] outline-none focus:border-ring" />
+        <button className="h-11 rounded-full bg-primary px-5 font-semibold text-primary-foreground">Add</button>
+      </form>
+      {msg && <p className="mt-2 text-sm text-muted-foreground">{msg}</p>}
+    </section>
   );
 }

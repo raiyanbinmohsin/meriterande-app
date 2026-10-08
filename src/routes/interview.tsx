@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { Mic, MicOff, Send, RotateCcw } from "lucide-react";
 import { SiteHeader, SiteFooter } from "@/components/landing";
-import { getInterviewSetup, setInterviewSetup, type InterviewSetup } from "@/lib/interview-store";
+import { getInterviewSetup, setInterviewSetup, lastAdRequiresSwedish, type InterviewSetup } from "@/lib/interview-store";
 import { gradeAnswer, interviewQuestions, interviewSummary, type Grade } from "@/lib/tools.functions";
 import { useCvText } from "@/lib/cv-store";
 
@@ -35,13 +35,14 @@ function Interview() {
   const [listening, setListening] = useState(false);
   const rec = useRef<SR | null>(null);
   const [ctx, setCtx] = useState("");
+  const [speechLang, setSpeechLang] = useState<"en-US" | "sv-SE">("en-US");
 
-  useEffect(() => { setSetup(getInterviewSetup()); setSrOk(!!getSR()); setLoaded(true); }, []);
+  useEffect(() => { setSetup(getInterviewSetup()); setSrOk(!!getSR()); if (lastAdRequiresSwedish()) setSpeechLang("sv-SE"); setLoaded(true); }, []);
 
   function toggleMic() {
     if (listening) { rec.current?.stop(); return; }
     const C = getSR(); if (!C) return;
-    const r = new C(); r.lang = "en-US"; r.continuous = true; r.interimResults = false;
+    const r = new C(); r.lang = speechLang; r.continuous = true; r.interimResults = false;
     const base = answer ? answer.trim() + " " : "";
     let said = "";
     r.onresult = (e) => { said = Array.from(e.results).map((x) => x[0]?.transcript ?? "").join(" "); setAnswer(base + said); };
@@ -114,6 +115,16 @@ function Interview() {
                         className="mt-5 w-full rounded-2xl border border-input bg-background/70 p-4 text-[16px] leading-relaxed outline-none focus:border-ring" />
                       {err && <p role="alert" className="mt-2 text-destructive">{err}</p>}
                       <div className="mt-3 flex flex-wrap gap-2">
+                        {srOk && (
+                          <div role="group" aria-label="Speech language" className="glass inline-flex h-12 items-center rounded-full p-1">
+                            {(["en-US", "sv-SE"] as const).map((l) => (
+                              <button key={l} onClick={() => { rec.current?.stop(); setSpeechLang(l); }} aria-pressed={speechLang === l}
+                                className={`h-10 rounded-full px-4 text-sm font-semibold ${speechLang === l ? "bg-primary text-primary-foreground" : "text-foreground"}`}>
+                                {l === "en-US" ? "English" : "Svenska"}
+                              </button>
+                            ))}
+                          </div>
+                        )}
                         {srOk && (
                           <button onClick={toggleMic} aria-pressed={listening} className={`inline-flex h-12 items-center gap-2 rounded-full px-5 font-semibold ${listening ? "bg-destructive text-destructive-foreground" : "glass"}`}>
                             {listening ? <><MicOff className="h-5 w-5" /> Stop</> : <><Mic className="h-5 w-5" /> Speak</>}

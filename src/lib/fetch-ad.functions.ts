@@ -1,6 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 
-const BLOCKED = "This site blocks automatic reading. Please copy and paste the ad text instead.";
+const BLOCKED = "This site blocks automatic reading. Select the ad text and use the Meriterande bookmarklet, or copy and paste it here.";
 const MAX = 15000;
 
 function decodeEntities(s: string) {
@@ -26,6 +26,45 @@ function htmlToText(html: string) {
     .replace(/ *\n */g, "\n")
     .replace(/\n{3,}/g, "\n\n")
     .trim();
+}
+
+type Json = Record<string, unknown>;
+function findJobPosting(node: unknown): Json | null {
+  if (!node || typeof node !== "object") return null;
+  if (Array.isArray(node)) { for (const n of node) { const f = findJobPosting(n); if (f) return f; } return null; }
+  const o = node as Json;
+  const t = o["@type"];
+  if (t === "JobPosting" || (Array.isArray(t) && t.includes("JobPosting"))) return o;
+  return findJobPosting(o["@graph"]);
+}
+const str = (v: unknown) => (typeof v === "string" ? v.trim() : "");
+
+/** schema.org JobPosting JSON-LD, which many career sites (e.g. Teamtailor) embed. */
+export function jobPostingFromJsonLd(html: string): string | null {
+  const blocks = html.matchAll(/<script[^>]*type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi);
+  for (const b of blocks) {
+    let parsed: unknown;
+    try { parsed = JSON.parse((b[1] ?? "").trim()); } catch { continue; }
+    const jp = findJobPosting(parsed);
+    if (!jp) continue;
+    const org = jp["hiringOrganization"] as Json | undefined;
+    const locs = ([] as unknown[]).concat(jp["jobLocation"] ?? []).map((l) => {
+      const a = (l as Json)?.["address"] as Json | undefined;
+      return a ? [str(a["addressLocality"]), str(a["addressRegion"]), str(a["addressCountry"])].filter(Boolean).join(", ") : "";
+    }).filter(Boolean);
+    const desc = htmlToText(decodeEntities(str(jp["description"])));
+    if (desc.length < 100) continue;
+    const emp = ([] as unknown[]).concat(jp["employmentType"] ?? []).map(String).filter(Boolean);
+    return [
+      str(jp["title"]),
+      org && str(org["name"]) && `Employer: ${str(org["name"])}`,
+      locs.length && `Location: ${locs.join("; ")}`,
+      emp.length && `Employment type: ${emp.join(", ")}`,
+      str(jp["validThrough"]) && `Apply by: ${str(jp["validThrough"]).slice(0, 10)}`,
+      desc,
+    ].filter(Boolean).join("\n\n");
+  }
+  return null;
 }
 
 function isPrivateHost(host: string) {
@@ -63,6 +102,8 @@ export const fetchAd = createServerFn({ method: "POST" })
       });
       if (!r.ok || !(r.headers.get("content-type") ?? "").includes("html")) return { ok: false, error: BLOCKED };
       const html = (await r.text()).slice(0, 2_000_000);
+      const ld = jobPostingFromJsonLd(html);
+      if (ld) return { ok: true, text: ld.slice(0, MAX) };
       const text = htmlToText(html);
       if (text.length < 300) return { ok: false, error: BLOCKED };
       return { ok: true, text: text.slice(0, MAX) };

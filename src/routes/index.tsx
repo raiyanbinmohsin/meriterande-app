@@ -5,6 +5,10 @@ import { decodeAd, LANGS, COUNTRIES, countryOf, type DecodeResult } from "@/lib/
 import { addJob } from "@/lib/tracker";
 import { takePendingAd } from "@/lib/ad-store";
 import { Link } from "@tanstack/react-router";
+import { addRecentAd } from "@/lib/recent-ads";
+import { AdPicker } from "@/components/AdPicker";
+import { setLastSwedishVerdict } from "@/lib/interview-store";
+import { LongProgress, TaskError, withDeadline } from "@/components/LongTask";
 import { recommendAd, type CompareResult } from "@/lib/compare.functions";
 import { CompareTable } from "@/components/CompareTable";
 import { HighlightedAd } from "@/components/HighlightedAd";
@@ -47,6 +51,16 @@ const LOADING = [
   "Reading between the lagom lines...",
 ];
 
+// Official national statistics offices only — the app never generates salary numbers.
+export const SALARY_SOURCES: Record<string, { name: string; url: string }> = {
+  Sweden: { name: "Statistics Sweden (SCB Lönesök)", url: "https://www.scb.se/hitta-statistik/sverige-i-siffror/lonesok/" },
+  Norway: { name: "Statistics Norway (SSB)", url: "https://www.ssb.no/en/arbeid-og-lonn/lonn-og-arbeidskraftkostnader/statistikk/lonn" },
+  Denmark: { name: "Statistics Denmark (Danmarks Statistik)", url: "https://www.dst.dk/en/Statistik/emner/arbejde-og-indkomst/indkomst-og-loen/loen" },
+  Finland: { name: "Statistics Finland", url: "https://stat.fi/en/statistics/pra" },
+  Germany: { name: "the Federal Statistical Office (Destatis)", url: "https://www.destatis.de/EN/Themes/Labour/Earnings/_node.html" },
+  Netherlands: { name: "Statistics Netherlands (CBS)", url: "https://www.cbs.nl/en-gb/labour-and-income" },
+};
+
 function Index() {
   const [ad, setAd] = useState("");
   const [cv, setCv] = useCvText();
@@ -74,6 +88,8 @@ function Index() {
     setTimeout(() => document.getElementById("decode")?.scrollIntoView({ behavior: "smooth" }), 300);
   }, []);
   const [compare, setCompare] = useState(false);
+  const [decodedAd, setDecodedAd] = useState("");
+  const [cStep, setCStep] = useState<{ step: number; done: number; total: number } | null>(null);
   const [extraAds, setExtraAds] = useState<string[]>(["", ""]);
   const [compareRes, setCompareRes] = useState<DecodeResult[] | null>(null);
   const [rec, setRec] = useState<CompareResult | null>(null);
@@ -102,6 +118,9 @@ function Index() {
       if (r.ok) {
         setUsed({ lang, roast, country });
         setResult(r.result);
+        setDecodedAd(ad);
+        addRecentAd({ title: r.result.job_title || "Untitled role", company: r.result.company || "", text: ad });
+        setLastSwedishVerdict(country === "Sweden" ? r.result.swedish.verdict : "");
         setSavedId(null);
         if (country === "Sweden") addSeenPhrases(r.result.hidden_signals.map((h) => h.phrase));
         if (r.result.fit) void recordInsight(r.result.job_title, r.result.fit.score, r.result.fit.gaps);
@@ -120,22 +139,26 @@ function Index() {
     if (cv.trim().length < 30) { setError("Add your CV so each ad can be scored against it."); return; }
     setError(null); setResult(null); setCompareRes(null); setRec(null); setLoading(true); setMsgIdx(0);
     try {
-      const rs = await Promise.all(ads.map((a) => decodeAd({ data: { ad: a, cv, lang, roast, country } })));
+      setCStep({ step: 0, done: 0, total: ads.length });
+      const rs = await withDeadline(Promise.all(ads.map((a) => decodeAd({ data: { ad: a, cv, lang, roast, country } }).then((r) => {
+        setCStep((c) => c && { ...c, done: c.done + 1 }); return r;
+      }))));
       const bad = rs.find((r) => !r.ok);
       if (bad && !bad.ok) { setError(bad.error); return; }
       const results = rs.map((r) => (r as { ok: true; result: DecodeResult }).result);
       setUsed({ lang, roast, country });
       setCompareRes(results);
       setTimeout(() => document.getElementById("results")?.scrollIntoView({ behavior: "smooth" }), 50);
-      const rr = await recommendAd({ data: { lang, roast, rows: results.map((r, i) => ({
+      setCStep((c) => c && { ...c, step: 1 });
+      const rr = await withDeadline(recommendAd({ data: { lang, roast, rows: results.map((r, i) => ({
         label: `Ad ${i + 1}`, summary: r.role_summary, score: r.fit?.score ?? 0, swedish: r.swedish.verdict,
         met: r.fit?.must_haves_met ?? 0, total: r.must_haves.length, time: r.fit?.time_to_close ?? "", gaps: r.fit?.gaps ?? [],
-      })) } });
+      })) } }));
       if (rr.ok) setRec(rr.result); else setError(rr.error);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Something went wrong. Please try again.");
     } finally {
-      setLoading(false);
+      setLoading(false); setCStep(null);
     }
   }
 
@@ -167,6 +190,15 @@ function Index() {
           <Field label={compare ? "Job ad 1" : "Paste the job ad (Swedish or English)"} required value={ad} onChange={setAd} rows={9}
             placeholder="Vi söker en Data Engineer till vårt team i Stockholm..." />
           {!compare && country === "Sweden" && <HighlightedAd text={ad} />}
+          {compare && (
+            <AdPicker onPick={(text) => {
+              const slots = [ad, ...extraAds];
+              const free = slots.findIndex((x) => x.trim().length < 30);
+              const i = free === -1 ? slots.length - 1 : free;
+              if (i === 0) setAd(text); else setExtraAds(extraAds.map((y, j) => (j === i - 1 ? text : y)));
+              setError(null);
+            }} />
+          )}
           {compare && extraAds.map((x, i) => (
             <Field key={i} label={`Job ad ${i + 2}${i === 1 ? " (optional)" : ""}`} required={i === 0} value={x} rows={6}
               onChange={(v) => setExtraAds(extraAds.map((y, j) => (j === i ? v : y)))} placeholder="Paste another job ad..." />
@@ -206,9 +238,17 @@ function Index() {
           </div>
         </motion.section>
 
+        {loading && cStep && (
+          <div className="mt-10">
+            <LongProgress step={cStep.step} expected="30–60 seconds"
+              steps={[`Decoding ads (${cStep.done}/${cStep.total})`, "Comparing and picking the best"]} />
+          </div>
+        )}
         {loading && <LoadingSkeleton msg={LOADING[msgIdx] ?? ""} msgKey={msgIdx} />}
 
-        {error && (
+        {error && !loading && compare ? (
+          <div className="mt-10"><TaskError message={error} onRetry={onDecode} /></div>
+        ) : error && (
           <motion.div role="alert" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
             className="mt-10 rounded-3xl border border-destructive/30 bg-destructive/10 p-5 text-destructive">
             {error}
@@ -231,7 +271,7 @@ function Index() {
                 {savedId ? (
                   <Link to="/tracker" className="inline-flex h-11 items-center rounded-full bg-success/15 px-5 text-sm font-semibold text-success">Saved ✓ View tracker</Link>
                 ) : (
-                  <button onClick={() => setSavedId(addJob({ title: result.job_title || "Untitled role", company: result.company || "not specified", score: result.fit?.score ?? null, verdict: `${countryOf(used.country).lang}: ${result.swedish.verdict}` }).id)}
+                  <button onClick={() => setSavedId(addJob({ title: result.job_title || "Untitled role", company: result.company || "not specified", score: result.fit?.score ?? null, verdict: `${countryOf(used.country).lang}: ${result.swedish.verdict}`, adText: decodedAd }).id)}
                     className="inline-flex h-11 items-center rounded-full bg-primary px-5 text-sm font-semibold text-primary-foreground shadow-soft transition hover:-translate-y-0.5">
                     Save to tracker
                   </button>
@@ -295,13 +335,13 @@ function Index() {
               </Card>
             </Item>
 
-            {used.country === "Sweden" && (
+            {SALARY_SOURCES[used.country] && (
               <Item>
-                <a href="https://www.scb.se/hitta-statistik/sverige-i-siffror/lonesok/" target="_blank" rel="noopener noreferrer"
+                <a href={SALARY_SOURCES[used.country]!.url} target="_blank" rel="noopener noreferrer"
                   className="glass lift flex items-center gap-4 rounded-3xl p-5">
                   <span className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-sun/25 text-foreground"><BarChart3 className="h-6 w-6" /></span>
                   <span><span className="block text-lg font-semibold text-foreground">Check salary statistics ↗</span>
-                    <span className="text-sm text-muted-foreground">Official salary data from Statistics Sweden (SCB Lönesök). We don't estimate salaries.</span></span>
+                    <span className="text-sm text-muted-foreground">Official salary data from {SALARY_SOURCES[used.country]!.name}. We don't estimate salaries.</span></span>
                 </a>
               </Item>
             )}

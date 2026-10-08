@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { fetchAd } from "@/lib/fetch-ad.functions";
 
-const BLOCKED = "This site blocks automatic reading. Please copy and paste the ad text instead.";
+const BLOCKED = "This site blocks automatic reading. Select the ad text and use the Meriterande bookmarklet, or copy and paste it here.";
 
 export function AdLinkFetch({ onText, autoUrl, autoFetch = true }: { onText: (t: string) => void; autoUrl?: string | undefined; autoFetch?: boolean }) {
   const [url, setUrl] = useState("");

@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { getProgress, saveRoadmap } from "@/lib/progress";
 import { buildPlan, type PlanResult } from "@/lib/plan.functions";
 import { buildResources } from "@/lib/learning";
+import { LongProgress, TaskError, withDeadline } from "./LongTask";
 import { ResourceCards, AnimatedNumber, LearnedButton } from "./Resources";
 
 const STYLES = ["Courses", "Building projects", "Reading docs", "Videos"];
@@ -30,7 +31,7 @@ export function CloseTheGap({ ad, cv, score, gaps, lang = "English", roast = fal
   async function onBuild() {
     setLoading(true); setError(null); setPlan(null); setDone({}); setLearned({});
     try {
-      const r = await buildPlan({ data: { ad, cv, score, gaps, hours, styles, target, lang, roast, country } });
+      const r = await withDeadline(buildPlan({ data: { ad, cv, score, gaps, hours, styles, target, lang, roast, country } }));
       if (r.ok) setPlan(r.result); else setError(r.error);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Something went wrong. Please try again.");
@@ -88,7 +89,8 @@ export function CloseTheGap({ ad, cv, score, gaps, lang = "English", roast = fal
         </button>
       </div>
 
-      {error && <div role="alert" className="mt-5 rounded-2xl border border-destructive/30 bg-destructive/5 p-4 text-destructive">{error}</div>}
+      {loading && <div className="mt-5"><LongProgress steps={["Analyzing gaps", "Building milestones", "Adding resources"]} expected="30–60 seconds" stepAt={18} /></div>}
+      {error && !loading && <div className="mt-5"><TaskError message={error} onRetry={onBuild} /></div>}
 
       {plan && (
         <div className="mt-8 space-y-6">

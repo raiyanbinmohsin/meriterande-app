@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import { motion } from "motion/react";
 import { Quote } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { useServerFn } from "@tanstack/react-start";
+import { submitStory } from "@/lib/stories.functions";
 
 type Story = { id: string; name: string | null; role: string; story: string };
 
@@ -14,6 +16,8 @@ export function SuccessStories() {
   const [consent, setConsent] = useState(false);
   const [state, setState] = useState<"idle" | "busy" | "sent">("idle");
   const [err, setErr] = useState<string | null>(null);
+  const [website, setWebsite] = useState("");
+  const send = useServerFn(submitStory);
 
   useEffect(() => {
     supabase.from("stories").select("id, name, role, story").eq("status", "approved").order("created_at", { ascending: false }).limit(12)
@@ -26,8 +30,10 @@ export function SuccessStories() {
     if (story.trim().length < 20) return setErr("Your story needs at least 20 characters.");
     if (!consent) return setErr("Please tick the consent box.");
     setErr(null); setState("busy");
-    const { error } = await supabase.from("stories").insert({ name: anon || !name.trim() ? null : name.trim().slice(0, 80), role: role.trim().slice(0, 120), story: story.trim().slice(0, 1200), consent: true });
-    if (error) { setErr("Couldn't send your story. Please try again."); setState("idle"); return; }
+    let r: Awaited<ReturnType<typeof send>>;
+    try { r = await send({ data: { name: anon || !name.trim() ? null : name.trim().slice(0, 80), role: role.trim().slice(0, 120), story: story.trim().slice(0, 1200), consent: true, website } }); }
+    catch { r = { ok: false, error: "Couldn't send your story. Please try again." }; }
+    if (!r.ok) { setErr(r.error); setState("idle"); return; }
     setState("sent");
   }
   const input = "h-12 w-full rounded-2xl border border-input bg-background/70 px-4 text-[16px] text-foreground outline-none focus:border-ring focus:ring-4 focus:ring-ring/15";
@@ -58,8 +64,11 @@ export function SuccessStories() {
         ) : (
           <>
             <div className="grid gap-3 sm:grid-cols-2">
-              <input className={input} placeholder="Your name" value={name} onChange={(e) => setName(e.target.value)} disabled={anon} aria-label="Your name" />
-              <input className={input} placeholder="Role you landed *" value={role} onChange={(e) => setRole(e.target.value)} aria-label="Role you landed" />
+              <input className={input} placeholder="Your name" maxLength={80} value={name} onChange={(e) => setName(e.target.value)} disabled={anon} aria-label="Your name" />
+              <input className={input} placeholder="Role you landed *" maxLength={120} value={role} onChange={(e) => setRole(e.target.value)} aria-label="Role you landed" />
+            </div>
+            <div aria-hidden="true" style={{ position: "absolute", left: "-10000px", width: 1, height: 1, overflow: "hidden" }}>
+              <label>Website<input tabIndex={-1} autoComplete="off" name="website" value={website} onChange={(e) => setWebsite(e.target.value)} /></label>
             </div>
             <label className="flex min-h-11 items-center gap-2.5 text-sm"><input type="checkbox" checked={anon} onChange={(e) => setAnon(e.target.checked)} className="h-5 w-5 accent-primary" /> Post anonymously</label>
             <textarea className={input + " h-auto py-3"} rows={4} maxLength={1200} placeholder="Your short story *" value={story} onChange={(e) => setStory(e.target.value)} aria-label="Your story" />

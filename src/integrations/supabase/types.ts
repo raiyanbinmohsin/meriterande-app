@@ -14,6 +14,21 @@ export type Database = {
   }
   public: {
     Tables: {
+      admin_emails: {
+        Row: {
+          created_at: string
+          email: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+        }
+        Relationships: []
+      }
       insight_events: {
         Row: {
           created_at: string
@@ -46,28 +61,34 @@ export type Database = {
           consent: boolean
           created_at: string
           id: string
+          ip_hash: string | null
           name: string | null
           role: string
           status: string
           story: string
+          user_id: string | null
         }
         Insert: {
           consent?: boolean
           created_at?: string
           id?: string
+          ip_hash?: string | null
           name?: string | null
           role: string
           status?: string
           story: string
+          user_id?: string | null
         }
         Update: {
           consent?: boolean
           created_at?: string
           id?: string
+          ip_hash?: string | null
           name?: string | null
           role?: string
           status?: string
           story?: string
+          user_id?: string | null
         }
         Relationships: []
       }
