@@ -212,9 +212,17 @@ function Index() {
           </div>
         </motion.section>
 
+        {loading && cStep && (
+          <div className="mt-10">
+            <LongProgress step={cStep.step} expected="30–60 seconds"
+              steps={[`Decoding ads (${cStep.done}/${cStep.total})`, "Comparing and picking the best"]} />
+          </div>
+        )}
         {loading && <LoadingSkeleton msg={LOADING[msgIdx] ?? ""} msgKey={msgIdx} />}
 
-        {error && (
+        {error && !loading && compare ? (
+          <div className="mt-10"><TaskError message={error} onRetry={onDecode} /></div>
+        ) : error && (
           <motion.div role="alert" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
             className="mt-10 rounded-3xl border border-destructive/30 bg-destructive/10 p-5 text-destructive">
             {error}

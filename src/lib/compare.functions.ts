@@ -31,7 +31,7 @@ export const recommendAd = createServerFn({ method: "POST" })
       method: "POST",
       headers: { "Content-Type": "application/json", "Lovable-API-Key": key, "X-Lovable-AIG-SDK": "fetch" },
       body: JSON.stringify({
-        model: "openai/gpt-6-astra",
+        model: "openai/gpt-6-luna",
         instructions: SYSTEM + styleRules(data.lang, data.roast),
         input: JSON.stringify(data.rows, null, 1),
         stream: true,
