@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { motion } from "motion/react";
-import { Lock, Users } from "lucide-react";
+import { Lock, Share2, Users } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { SiteHeader, SiteFooter } from "@/components/landing";
 import { useAuth } from "@/lib/auth";
@@ -15,7 +15,29 @@ export const Route = createFileRoute("/insights")({
 });
 
 type Bar = { label: string; people: number; avg_score?: number };
-type Data = { ready: false } | { ready: true; gaps: Bar[]; titles: Bar[]; avg_score: number | null };
+type Data = { ready: false; joined?: number; needed?: number } | { ready: true; gaps: Bar[]; titles: Bar[]; avg_score: number | null };
+
+function ColdStart({ joined, needed }: { joined: number; needed: number }) {
+  const [copied, setCopied] = useState(false);
+  async function share() {
+    const url = `${window.location.origin}/insights`;
+    const text = "Help unlock anonymous skill-gap insights for job seekers on Meriterande — sign in and opt in to share anonymous data.";
+    try {
+      if (navigator.share) { await navigator.share({ title: "Meriterande insights", text, url }); return; }
+      await navigator.clipboard.writeText(`${text} ${url}`); setCopied(true); setTimeout(() => setCopied(false), 2000);
+    } catch { /* user cancelled */ }
+  }
+  return (
+    <Gate icon={<Users className="h-6 w-6" />} title={`${joined} of ${needed} people have joined`} text={`Insights unlock at ${needed}. Thanks for being one of them!`}>
+      <div className="mx-auto mt-5 h-3 max-w-md overflow-hidden rounded-full bg-muted" role="progressbar" aria-valuemin={0} aria-valuemax={needed} aria-valuenow={joined}>
+        <div className="h-full rounded-full bg-primary transition-all" style={{ width: `${(joined / needed) * 100}%` }} />
+      </div>
+      <button onClick={share} className="mt-5 inline-flex h-12 items-center gap-2 rounded-full bg-primary px-6 font-semibold text-primary-foreground">
+        <Share2 className="h-4 w-4" /> {copied ? "Link copied!" : "Invite others to opt in"}
+      </button>
+    </Gate>
+  );
+}
 
 function Insights() {
   const { user, ready } = useAuth();
@@ -42,7 +64,7 @@ function Insights() {
               <button onClick={() => void setShareInsights(true)} className="mt-4 h-12 rounded-full bg-primary px-6 font-semibold text-primary-foreground">Share anonymous skill-gap data</button>
             </Gate>
           ) : !data ? <div className="skeleton h-48 rounded-3xl" /> : !data.ready ? (
-            <Gate icon={<Users className="h-6 w-6" />} title="Not enough people yet" text="Insights appear once at least 10 people have opted in. Thanks for being one of them!" />
+            <ColdStart joined={Math.min(data.joined ?? 0, data.needed ?? 10)} needed={data.needed ?? 10} />
           ) : (
             <div className="space-y-5">
               <div className="glass rounded-3xl p-6"><p className="text-sm font-semibold text-muted-foreground">Average fit score</p><p className="text-6xl" style={{ fontFamily: "var(--font-display)" }}>{data.avg_score ?? "—"}<span className="text-xl text-muted-foreground"> / 100</span></p></div>
