@@ -47,7 +47,7 @@ function Insights() {
   const load = useServerFn(loadInsights);
   useEffect(() => {
     if (!user || !sync.shareInsights) return;
-    load().then((d) => setData((d as Data) ?? { ready: false })).catch(() => setData({ ready: false }));
+    load().then((d) => setData((JSON.parse(d) as Data) ?? { ready: false })).catch(() => setData({ ready: false }));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user, sync.shareInsights]);
 
