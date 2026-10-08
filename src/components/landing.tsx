@@ -4,7 +4,7 @@ import { AccountMenu } from "./AccountMenu";
 import { HeroIllustration, StepIllustration, CampusIllustration } from "./illustrations";
 import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
-import { ClipboardPaste, Sparkles, Route as RouteIcon, Moon, Sun, Languages, Compass, HeartHandshake, Mail } from "lucide-react";
+import { ClipboardPaste, Sparkles, Route as RouteIcon, Moon, Sun, Languages, Compass, HeartHandshake, Mail, Menu, X } from "lucide-react";
 
 export function Wordmark() {
   return (
@@ -68,15 +68,53 @@ function Tabs({ mobile }: { mobile?: boolean }) {
   );
 }
 
+const MENU = [
+  { to: "/", label: "Decode a job ad" }, { to: "/thesis", label: "Pitch a thesis" }, { to: "/find", label: "Find jobs I fit" },
+  { to: "/dictionary", label: "Dictionary" }, { to: "/tracker", label: "Tracker" }, { to: "/learn", label: "Swedish micro-lessons" },
+  { to: "/interview", label: "Mock interview" }, { to: "/employers", label: "For employers" }, { to: "/insights", label: "Career-centre insights" },
+] as const;
+
+function MobileMenu() {
+  const [open, setOpen] = useState(false);
+  useEffect(() => {
+    if (!open) return;
+    const k = (e: KeyboardEvent) => { if (e.key === "Escape") setOpen(false); };
+    window.addEventListener("keydown", k);
+    return () => window.removeEventListener("keydown", k);
+  }, [open]);
+  return (
+    <div className="sm:hidden">
+      <button onClick={() => setOpen(!open)} aria-label={open ? "Close menu" : "Open menu"} aria-expanded={open}
+        className="glass grid h-11 w-11 place-items-center rounded-full text-foreground">
+        {open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+      </button>
+      {open && (
+        <>
+          <button aria-label="Close menu" className="fixed inset-0 top-16 z-40 bg-background/60 backdrop-blur-sm" onClick={() => setOpen(false)} />
+          <nav aria-label="Pages" className="glass fixed inset-x-3 top-[4.5rem] z-50 rounded-3xl p-2 shadow-lift">
+            {MENU.map((m) => (
+              <Link key={m.to} to={m.to} onClick={() => setOpen(false)} activeOptions={{ exact: m.to === "/" }}
+                className="flex min-h-12 items-center rounded-2xl px-4 font-semibold"
+                activeProps={{ className: "bg-primary text-primary-foreground" }} inactiveProps={{ className: "text-foreground hover:bg-secondary" }}>
+                {m.label}
+              </Link>
+            ))}
+          </nav>
+        </>
+      )}
+    </div>
+  );
+}
+
 export function SiteHeader() {
   return (
     <header className="sticky top-0 z-40 border-b border-border/60 bg-background/70 backdrop-blur-xl">
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-3 px-4 sm:px-6">
         <Wordmark />
         <nav aria-label="Sections" className="glass hidden rounded-full p-1 xl:flex"><Tabs /></nav>
-        <div className="flex items-center gap-2"><BookmarkletButton /><ThemeToggle /><AccountMenu /></div>
+        <div className="flex items-center gap-2"><BookmarkletButton /><ThemeToggle /><AccountMenu /><MobileMenu /></div>
       </div>
-      <nav aria-label="Sections" className="mx-auto max-w-3xl px-4 pb-2 xl:hidden">
+      <nav aria-label="Sections" className="mx-auto hidden max-w-3xl px-4 pb-2 sm:block xl:hidden">
         <div className="glass flex w-full overflow-x-auto rounded-full p-1 text-[13px] [&>*]:shrink-0"><Tabs mobile /></div>
       </nav>
     </header>
