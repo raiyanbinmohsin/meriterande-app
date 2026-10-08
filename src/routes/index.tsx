@@ -5,6 +5,8 @@ import { decodeAd, LANGS, COUNTRIES, countryOf, type DecodeResult } from "@/lib/
 import { addJob } from "@/lib/tracker";
 import { takePendingAd } from "@/lib/ad-store";
 import { Link } from "@tanstack/react-router";
+import { addRecentAd } from "@/lib/recent-ads";
+import { AdPicker } from "@/components/AdPicker";
 import { setLastSwedishVerdict } from "@/lib/interview-store";
 import { LongProgress, TaskError, withDeadline } from "@/components/LongTask";
 import { recommendAd, type CompareResult } from "@/lib/compare.functions";
@@ -86,6 +88,7 @@ function Index() {
     setTimeout(() => document.getElementById("decode")?.scrollIntoView({ behavior: "smooth" }), 300);
   }, []);
   const [compare, setCompare] = useState(false);
+  const [decodedAd, setDecodedAd] = useState("");
   const [cStep, setCStep] = useState<{ step: number; done: number; total: number } | null>(null);
   const [extraAds, setExtraAds] = useState<string[]>(["", ""]);
   const [compareRes, setCompareRes] = useState<DecodeResult[] | null>(null);
@@ -115,6 +118,8 @@ function Index() {
       if (r.ok) {
         setUsed({ lang, roast, country });
         setResult(r.result);
+        setDecodedAd(ad);
+        addRecentAd({ title: r.result.job_title || "Untitled role", company: r.result.company || "", text: ad });
         setLastSwedishVerdict(country === "Sweden" ? r.result.swedish.verdict : "");
         setSavedId(null);
         if (country === "Sweden") addSeenPhrases(r.result.hidden_signals.map((h) => h.phrase));
@@ -257,7 +262,7 @@ function Index() {
                 {savedId ? (
                   <Link to="/tracker" className="inline-flex h-11 items-center rounded-full bg-success/15 px-5 text-sm font-semibold text-success">Saved ✓ View tracker</Link>
                 ) : (
-                  <button onClick={() => setSavedId(addJob({ title: result.job_title || "Untitled role", company: result.company || "not specified", score: result.fit?.score ?? null, verdict: `${countryOf(used.country).lang}: ${result.swedish.verdict}` }).id)}
+                  <button onClick={() => setSavedId(addJob({ title: result.job_title || "Untitled role", company: result.company || "not specified", score: result.fit?.score ?? null, verdict: `${countryOf(used.country).lang}: ${result.swedish.verdict}`, adText: decodedAd }).id)}
                     className="inline-flex h-11 items-center rounded-full bg-primary px-5 text-sm font-semibold text-primary-foreground shadow-soft transition hover:-translate-y-0.5">
                     Save to tracker
                   </button>

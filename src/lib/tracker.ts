@@ -16,6 +16,7 @@ export type Job = {
   deadline: string; // YYYY-MM-DD or ""
   appliedOn: string; // YYYY-MM-DD or ""
   reachedInterview: boolean;
+  adText?: string; // original ad text (cards saved from now on)
 };
 
 const KEY = "meriterande.tracker.v1";
@@ -43,7 +44,7 @@ export const getJobs = () => read();
 export const replaceJobs = (jobs: Job[]) => write(jobs);
 export function subscribeJobs(f: () => void) { subs.add(f); return () => { subs.delete(f); }; }
 
-export function addJob(j: Pick<Job, "title" | "company" | "score" | "verdict"> & { kind?: JobKind }) {
+export function addJob(j: Pick<Job, "title" | "company" | "score" | "verdict"> & { kind?: JobKind; adText?: string }) {
   const job: Job = { kind: "job", ...j, id: crypto.randomUUID(), savedOn: today(), column: "Saved", notes: "", deadline: "", appliedOn: "", reachedInterview: false };
   write([job, ...read()]);
   return job;
