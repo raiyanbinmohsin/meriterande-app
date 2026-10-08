@@ -14,6 +14,21 @@ export const Route = createFileRoute("/learn")({
   component: Learn,
 });
 
+export const STARTER_DECK = [
+  "meriterande", "provanställning", "tillsvidareanställning", "visstidsanställning", "kollektivavtal", "löpande urval",
+  "friskvårdsbidrag", "B-körkort", "tjänstepension", "heltid", "deltid", "tillträde enligt överenskommelse",
+  "flexibla arbetstider", "personligt brev", "sista ansökningsdag", "krav", "önskvärt", "flytande svenska",
+  "goda kunskaper i svenska", "lönesättning", "individuell lönesättning", "semester", "OB-tillägg", "registerutdrag", "fika",
+];
+
+function Chip({ t, active, learned }: { t: string; active: boolean; learned: boolean }) {
+  return (
+    <Link to="/learn" search={{ phrase: t }} className={`inline-flex min-h-11 items-center gap-1.5 rounded-full px-4 text-sm font-semibold transition ${active ? "bg-primary text-primary-foreground" : "glass text-foreground"}`}>
+      {learned && <Check className="h-4 w-4 text-success" />}{t}
+    </Link>
+  );
+}
+
 function speak(text: string) {
   if (typeof window === "undefined" || !("speechSynthesis" in window)) return;
   const u = new SpeechSynthesisUtterance(text);
@@ -50,16 +65,21 @@ function Learn() {
       <SiteHeader />
       <main className="mx-auto max-w-3xl px-4 py-12 sm:py-16">
         <h1 className="text-5xl text-foreground sm:text-6xl">Swedish <em className="text-primary">micro-lessons</em></h1>
-        <p className="mt-3 text-muted-foreground">Phrases from the ads you decode. {prog.phrasesLearned.length} learned so far.</p>
+        <p className="mt-3 text-muted-foreground">Phrases from the ads you decode, plus a starter deck. {prog.phrasesLearned.length} learned so far.</p>
 
-        <div className="mt-6 flex flex-wrap gap-2">
-          {targets.length === 0 && <p className="text-sm text-muted-foreground">Decode a Swedish job ad and its phrases appear here — or pick one from the <Link to="/dictionary" className="text-primary underline-offset-4 hover:underline">dictionary</Link>.</p>}
-          {targets.map((t) => (
-            <Link key={t} to="/learn" search={{ phrase: t }} className={`inline-flex min-h-11 items-center gap-1.5 rounded-full px-4 text-sm font-semibold transition ${t === phrase ? "bg-primary text-primary-foreground" : "glass text-foreground"}`}>
-              {isLearned(prog, t) && <Check className="h-4 w-4 text-success" />}{t}
-            </Link>
-          ))}
+        {targets.length > 0 && (
+          <>
+            <h2 className="mt-6 text-sm font-semibold uppercase tracking-wide text-muted-foreground">From your ads</h2>
+            <div className="mt-2 flex flex-wrap gap-2">
+              {targets.map((t) => <Chip key={t} t={t} active={t === phrase} learned={isLearned(prog, t)} />)}
+            </div>
+          </>
+        )}
+        <h2 className="mt-6 text-sm font-semibold uppercase tracking-wide text-muted-foreground">Starter deck · 25 essential workplace phrases</h2>
+        <div className="mt-2 flex flex-wrap gap-2">
+          {STARTER_DECK.filter((t) => !targets.some((x) => x.toLowerCase() === t.toLowerCase())).map((t) => <Chip key={t} t={t} active={t === phrase} learned={isLearned(prog, t)} />)}
         </div>
+        {targets.length === 0 && <p className="mt-3 text-sm text-muted-foreground">Decode a Swedish job ad and its phrases appear on top — or pick one from the <Link to="/dictionary" className="text-primary underline-offset-4 hover:underline">dictionary</Link>.</p>}
 
         {!phrase && <div className="glass mt-8 rounded-3xl p-8 text-center"><GraduationCap className="mx-auto h-10 w-10 text-primary" /><p className="mt-3 text-muted-foreground">Pick a phrase to start a 2-minute lesson.</p></div>}
         {busy && <div className="glass mt-8 space-y-3 rounded-3xl p-6"><div className="skeleton h-8 w-1/2 rounded-full" /><div className="skeleton h-4 w-full rounded-full" /><div className="skeleton h-4 w-4/5 rounded-full" /></div>}
