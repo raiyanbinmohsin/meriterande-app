@@ -13,12 +13,14 @@ export function CoverLetter({ ad, cv, localLang }: { ad: string; cv: string; loc
   const [err, setErr] = useState<string | null>(null);
   const [res, setRes] = useState<CL | null>(null);
   const [copied, setCopied] = useState(false);
+  const [usedSettings, setUsedSettings] = useState<string | null>(null);
+  const changed = !!res && usedSettings !== `${tone}|${length}|${language}`;
 
   async function go() {
     setBusy(true); setErr(null);
     try {
       const r = await writeCoverLetter({ data: { ad, cv, tone, length, language } });
-      if (r.ok) setRes(r.result); else setErr(r.error);
+      if (r.ok) { setRes(r.result); setUsedSettings(`${tone}|${length}|${language}`); } else setErr(r.error);
     } catch (e) { setErr(e instanceof Error ? e.message : "Something went wrong. Please try again."); } finally { setBusy(false); }
   }
   async function docx() {
@@ -53,13 +55,13 @@ export function CoverLetter({ ad, cv, localLang }: { ad: string; cv: string; loc
         <button className={chip(language === "English")} onClick={() => setLanguage("English")}>English</button>
         <button className={chip(language === localLang)} onClick={() => setLanguage(localLang)}>{localLang}</button>
       </div>
-      <button onClick={go} disabled={busy} className="mt-4 h-12 rounded-full bg-primary px-7 font-semibold text-primary-foreground shadow-soft disabled:opacity-60">
-        {busy ? "Writing..." : res ? "Rewrite" : "Write it"}
+      <button onClick={go} disabled={busy} className={`mt-4 h-12 rounded-full px-7 font-semibold shadow-soft disabled:opacity-60 ${changed && !busy ? "bg-sun text-foreground ring-4 ring-sun/40 animate-pulse" : "bg-primary text-primary-foreground"}`}>
+        {busy ? "Writing..." : changed ? "Settings changed — Rewrite" : res ? "Rewrite" : "Write it"}
       </button>
       {busy && <div className="mt-5 space-y-2.5">{[0, 1, 2, 3].map((k) => <div key={k} className="skeleton h-4 rounded-full" style={{ width: `${95 - k * 12}%` }} />)}</div>}
       {err && <p role="alert" className="mt-4 rounded-2xl bg-destructive/10 p-4 text-destructive">{err}</p>}
       {res && !busy && (
-        <div className="mt-5">
+        <div className={`mt-5 transition-opacity ${changed ? "opacity-60" : ""}`}>
           <p className="text-sm text-muted-foreground"><strong>Subject:</strong> {res.subject}</p>
           <div className="mt-2 whitespace-pre-wrap rounded-2xl border border-border bg-background/70 p-5 leading-relaxed text-foreground">{res.letter}</div>
           <div className="mt-3 flex flex-wrap gap-2">
