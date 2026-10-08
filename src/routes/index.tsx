@@ -479,7 +479,8 @@ function FitCard({ fit }: { fit: NonNullable<DecodeResult["fit"]> }) {
     if (fit.score < 80) return;
     const t = setTimeout(() => {
       import("canvas-confetti").then(({ default: confetti }) =>
-        confetti({ particleCount: 70, spread: 70, startVelocity: 32, origin: { y: 0.45 }, scalar: 0.8, disableForReducedMotion: true }));
+        confetti({ particleCount: 70, spread: 70, startVelocity: 32, origin: { y: 0.45 }, scalar: 0.8, disableForReducedMotion: true }))
+        .catch(() => { /* decorative only: a stale file after a deploy must not break the page */ });
     }, 1300);
     return () => clearTimeout(t);
   }, [fit.score]);
